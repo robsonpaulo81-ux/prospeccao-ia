@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: prospeccao
+      POSTGRES_PASSWORD: prospeccao
+      POSTGRES_DB: prospeccao_ia
+    ports:
+      - "5432:5432"
+    volumes:
+      - prospeccao_db_data:/var/lib/postgresql/data
+
+volumes:
+  prospeccao_db_data:
