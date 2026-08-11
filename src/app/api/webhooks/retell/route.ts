@@ -138,4 +138,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
-"fix: grava lead_id, campanha_id e resultado no webhook"
