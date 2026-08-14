@@ -166,4 +166,3 @@ async function processarTranscriptUpdate(retellCallId: string, call: any) {
     );
   }
 }
-"Adiciona transcript_updated ao webhook do Retell",
