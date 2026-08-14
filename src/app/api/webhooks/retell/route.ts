@@ -1,28 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { analisarChamada } from "@/lib/retell";
+import { gerarSugestoesCoach, type TurnoTranscricao } from "@/lib/coach-engine";
 
 // Configure esta URL no Retell em Settings -> Webhooks:
 // https://SEU-DOMINIO/api/webhooks/retell
 //
-// Eventos tratados: call_started, call_ended, call_analyzed
+// Eventos tratados: call_started, call_ended, call_analyzed, transcript_updated
 // Referência do formato de payload: https://docs.retellai.com/features/webhook
 
-// Normaliza telefone para comparação (mantém só dígitos, sem + nem espaços)
 function normalizarTelefone(tel: string | null | undefined): string | null {
   if (!tel) return null;
   return tel.replace(/\D/g, "");
 }
 
-// Mapeia o resultado da análise pós-chamada do Retell para o enum usado no banco.
-// Ajuste os nomes de campo aqui conforme o que você configurou em
-// "Extração de dados pós-chamada" no agente do Retell.
 function mapearResultado(callAnalysis: any): string | null {
   if (!callAnalysis) return null;
-
   const custom = callAnalysis.custom_analysis_data ?? {};
-
-  // Exemplo: se você tem um campo booleano "agendamento" ou "agendou" configurado
   if (custom.agendamento === true || custom.agendou === true) {
     return "agendou";
   }
@@ -49,13 +43,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (evento === "call_started") {
-    // Número do lead: em chamada de saída é to_number; em chamada recebida é from_number
     const direction = call.direction ?? (call.to_number ? "outbound" : "inbound");
     const numeroLead =
       direction === "outbound" ? call.to_number : call.from_number;
     const telefoneNormalizado = normalizarTelefone(numeroLead);
 
-    // Lookup do lead pelo telefone
     let leadId: string | null = null;
     if (telefoneNormalizado) {
       const [lead] = await query(
@@ -65,7 +57,6 @@ export async function POST(req: NextRequest) {
       leadId = lead?.id ?? null;
     }
 
-    // Lookup da campanha pelo agent_id do Retell
     let campanhaId: string | null = null;
     if (call.agent_id) {
       const [campanha] = await query(
@@ -86,11 +77,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (evento === "transcript_updated") {
+    processarTranscriptUpdate(retellCallId, call).catch((err) =>
+      console.error("Erro processando transcript_updated:", err)
+    );
+    return NextResponse.json({ ok: true });
+  }
+
   if (evento === "call_ended") {
     const duracaoSegundos = call.duration_ms ? Math.round(call.duration_ms / 1000) : null;
     const transcricao = call.transcript ?? null;
-
-    // Custo vem em centavos de dólar na API do Retell (call_cost.combined_cost)
     const custoEstimado =
       call.call_cost?.combined_cost != null
         ? call.call_cost.combined_cost / 100
@@ -120,7 +116,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Dispara a análise comportamental de forma assíncrona (não bloqueia a resposta do webhook)
     if (transcricao) {
       const [chamada] = await query(`SELECT id FROM chamadas WHERE retell_call_id = $1`, [retellCallId]);
       if (chamada) {
@@ -134,30 +129,41 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-    // src/app/api/coach-suggestions/[callId]/route.ts
-//
-// Endpoint de leitura para o painel da tela de detalhe da chamada.
-// MVP: polling simples (o painel chama isso a cada 2-3s enquanto a chamada está ativa).
-
-import { NextRequest, NextResponse } from "next/server";
-import { query } from "@/lib/db";
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { callId: string } }
-) {
-  const rows = await query(
-    `SELECT suggestion_type, priority, text, created_at
-     FROM coach_suggestions
-     WHERE call_id = $1
-     ORDER BY created_at DESC
-     LIMIT 5`,
-    [params.callId]
-  );
-
-  return NextResponse.json({ suggestions: rows });
-}
   }
 
   return NextResponse.json({ ok: true });
 }
+
+async function processarTranscriptUpdate(retellCallId: string, call: any) {
+  const rawTranscript = call.transcript_object;
+  if (!rawTranscript || !Array.isArray(rawTranscript)) return;
+
+  const transcript: TurnoTranscricao[] = rawTranscript.map((turno: any) => ({
+    speaker: turno.role === "agent" ? "agente" : "lead",
+    text: turno.content,
+  }));
+
+  let callContext =
+    "SDR ligando para lead do programa Minha Casa Minha Vida, objetivo: qualificar e agendar demo";
+  if (call.agent_id) {
+    const [campanha] = await query(
+      `SELECT nome FROM campanhas WHERE retell_agent_id = $1 LIMIT 1`,
+      [call.agent_id]
+    );
+    if (campanha?.nome) {
+      callContext = `SDR ligando para lead da campanha "${campanha.nome}", objetivo: qualificar e agendar demo`;
+    }
+  }
+
+  const sugestoes = await gerarSugestoesCoach({ callContext, transcript });
+  if (sugestoes.length === 0) return;
+
+  for (const sugestao of sugestoes) {
+    await query(
+      `INSERT INTO coach_suggestions (call_id, suggestion_type, priority, text)
+       VALUES ($1, $2, $3, $4)`,
+      [retellCallId, sugestao.type, sugestao.priority, sugestao.text]
+    );
+  }
+}
+"Adiciona transcript_updated ao webhook do Retell",
