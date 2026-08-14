@@ -76,14 +76,15 @@ export async function POST(req: NextRequest) {
       [retellCallId, leadId, campanhaId]
     );
   }
-
-  if (evento === "transcript_updated") {
-    processarTranscriptUpdate(retellCallId, call).catch((err) =>
-      console.error("Erro processando transcript_updated:", err)
-    );
+if (evento === "transcript_updated") {
+    try {
+      await processarTranscriptUpdate(retellCallId, call);
+    } catch (err) {
+      console.error("Erro processando transcript_updated:", err);
+    }
     return NextResponse.json({ ok: true });
   }
-
+ 
   if (evento === "call_ended") {
     const duracaoSegundos = call.duration_ms ? Math.round(call.duration_ms / 1000) : null;
     const transcricao = call.transcript ?? null;
