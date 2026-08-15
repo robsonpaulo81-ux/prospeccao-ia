@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 
 type Sugestao = {
-  id: string;
-  tipo: string;
-  texto: string;
-  criado_em: string;
+  suggestion_type: string;
+  priority: number;
+  text: string;
+  created_at: string;
 };
 
 const cardStyle: React.CSSProperties = {
@@ -30,12 +30,12 @@ export default function PainelCoach({ chamadaId }: { chamadaId: string }) {
 
     async function buscar() {
       try {
-        const res = await fetch(`/api/chamadas/${chamadaId}/sugestoes`, {
+        const res = await fetch(`/api/coach-suggestions/${chamadaId}`, {
           cache: "no-store",
         });
         if (!res.ok) return;
         const data = await res.json();
-        setSugestoes(data.sugestoes ?? []);
+        setSugestoes(data.suggestions ?? []);
       } catch {
         // silencioso: próxima tentativa em 3s
       }
@@ -83,9 +83,9 @@ export default function PainelCoach({ chamadaId }: { chamadaId: string }) {
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {sugestoes.map((s) => (
+        {sugestoes.map((s, i) => (
           <div
-            key={s.id}
+            key={i}
             style={{
               background: "#fff9e8",
               border: "1px solid #f0e4b8",
@@ -94,9 +94,9 @@ export default function PainelCoach({ chamadaId }: { chamadaId: string }) {
             }}
           >
             <p style={{ fontSize: 11, color: "#a68b2c", marginBottom: 2 }}>
-              {tipoLabel[s.tipo] ?? s.tipo}
+              {tipoLabel[s.suggestion_type] ?? s.suggestion_type}
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.4 }}>{s.texto}</p>
+            <p style={{ fontSize: 13, lineHeight: 1.4 }}>{s.text}</p>
           </div>
         ))}
       </div>
