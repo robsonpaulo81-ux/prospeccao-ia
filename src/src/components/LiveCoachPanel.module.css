@@ -1,1 +1,121 @@
+/* src/components/LiveCoachPanel.module.css */
 
+.painel {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.aoVivo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.pontoPulsando {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulsar 1.6s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.textoVazio {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.sugestaoDestaque {
+  border-left: 3px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.prioridade-alta {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.prioridade-media {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.prioridade-baixa {
+  border-left-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.tipoLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.textoSugestao {
+  font-size: 13.5px;
+  color: #1f2937;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+
+.historico {
+  margin-top: 8px;
+}
+
+.historicoResumo {
+  font-size: 12px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.historicoResumo:hover {
+  color: #4b5563;
+}
+
+.historicoLista {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historicoItem {
+  font-size: 12px;
+  color: #6b7280;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.historicoItemTipo {
+  font-weight: 500;
+}
