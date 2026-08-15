@@ -1,6 +1,1 @@
-import { LiveCoachPanel } from "@/components/LiveCoachPanel";
 
-<LiveCoachPanel 
-  callId={chamada.retell_call_id} 
-  ativo={chamada.status === "em_andamento"} 
-/>
