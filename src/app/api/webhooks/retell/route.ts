@@ -32,6 +32,22 @@ function mapearResultado(callAnalysis: any): string | null {
   return null;
 }
 
+// Decide a fase do Kanban a partir da análise da IA.
+// Restrição e "sem interesse" têm prioridade sobre interesse/hot lead.
+function definirFase(analise: {
+  tem_restricao: boolean;
+  motivo_sem_interesse: string | null;
+  hot_lead: boolean;
+  tipo_imovel: string | null;
+  cidade_interesse: string | null;
+}): string {
+  if (analise.tem_restricao) return "restricao";
+  if (analise.motivo_sem_interesse) return "sem_interesse";
+  if (analise.hot_lead) return "hot_lead";
+  if (analise.tipo_imovel || analise.cidade_interesse) return "interessado";
+  return "atendimento";
+}
+
 export async function POST(req: NextRequest) {
   const payload = await req.json();
   const evento = payload.event as string;
@@ -76,7 +92,8 @@ export async function POST(req: NextRequest) {
       [retellCallId, leadId, campanhaId]
     );
   }
-if (evento === "transcript_updated") {
+
+  if (evento === "transcript_updated") {
     try {
       await processarTranscriptUpdate(retellCallId, call);
     } catch (err) {
@@ -84,7 +101,7 @@ if (evento === "transcript_updated") {
     }
     return NextResponse.json({ ok: true });
   }
- 
+
   if (evento === "call_ended") {
     const duracaoSegundos = call.duration_ms ? Math.round(call.duration_ms / 1000) : null;
     const transcricao = call.transcript ?? null;
@@ -118,9 +135,14 @@ if (evento === "transcript_updated") {
     }
 
     if (transcricao) {
-      const [chamada] = await query(`SELECT id FROM chamadas WHERE retell_call_id = $1`, [retellCallId]);
+      const [chamada] = await query(
+        `SELECT id, lead_id FROM chamadas WHERE retell_call_id = $1`,
+        [retellCallId]
+      );
+
       if (chamada) {
         const analise = await analisarChamada(transcricao);
+
         await query(
           `INSERT INTO analises_chamada (chamada_id, sentimento, score_interesse, objecoes, palavras_chave, resumo)
            VALUES ($1, $2, $3, $4, $5, $6)
@@ -128,6 +150,29 @@ if (evento === "transcript_updated") {
              sentimento = $2, score_interesse = $3, objecoes = $4, palavras_chave = $5, resumo = $6`,
           [chamada.id, analise.sentimento, analise.score_interesse, analise.objecoes, analise.palavras_chave, analise.resumo]
         );
+
+        // Atualiza o card do lead no Kanban com o que a IA identificou na ligação
+        if (chamada.lead_id) {
+          const novaFase = definirFase(analise);
+          await query(
+            `UPDATE leads
+             SET fase = $2,
+                 tipo_imovel = COALESCE($3, tipo_imovel),
+                 cidade_interesse = COALESCE($4, cidade_interesse),
+                 tem_restricao = $5,
+                 motivo_sem_interesse = $6,
+                 fase_atualizada_em = now()
+             WHERE id = $1`,
+            [
+              chamada.lead_id,
+              novaFase,
+              analise.tipo_imovel,
+              analise.cidade_interesse,
+              analise.tem_restricao,
+              analise.motivo_sem_interesse,
+            ]
+          );
+        }
       }
     }
   }
