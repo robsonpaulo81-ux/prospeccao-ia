@@ -17,7 +17,7 @@ export default async function DetalheChamadaPage({ params }: { params: { id: str
   );
   if (!chamada) return notFound();
 
-  const emAndamento = chamada.status === "em_andamento";
+  const emAndamento = chamada.finalizado_em === null;
 
   const cardStyle: React.CSSProperties = { background: "#fff", border: "1px solid #e5e3da", borderRadius: 8, padding: "1rem" };
   return (
