@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import { notFound } from "next/navigation";
+import PainelCoach from "./PainelCoach";
 
 export default async function DetalheChamadaPage({ params }: { params: { id: string } }) {
   const [chamada] = await query(
@@ -14,31 +15,33 @@ export default async function DetalheChamadaPage({ params }: { params: { id: str
     `,
     [params.id]
   );
-
   if (!chamada) return notFound();
 
-  const cardStyle: React.CSSProperties = { background: "#fff", border: "1px solid #e5e3da", borderRadius: 8, padding: "1rem" };
+  const emAndamento = chamada.status === "em_andamento";
 
+  const cardStyle: React.CSSProperties = { background: "#fff", border: "1px solid #e5e3da", borderRadius: 8, padding: "1rem" };
   return (
     <div style={{ maxWidth: 800 }}>
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: 4 }}>{chamada.lead_nome ?? "Lead sem nome"}</h1>
       <p style={{ fontSize: 13, color: "#777", marginBottom: "1rem" }}>{chamada.campanha_nome} · {chamada.resultado ?? "sem resultado"}</p>
-
       <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 16 }}>
         <div style={cardStyle}>
           <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>Transcrição</p>
           <p style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{chamada.transcricao ?? "Sem transcrição disponível."}</p>
         </div>
-        <div style={cardStyle}>
-          <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>Análise comportamental</p>
-          <p style={{ fontSize: 12, color: "#777" }}>Sentimento</p>
-          <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>{chamada.sentimento ?? "—"}</p>
-          <p style={{ fontSize: 12, color: "#777" }}>Score de interesse</p>
-          <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>{chamada.score_interesse ?? "—"}</p>
-          <p style={{ fontSize: 12, color: "#777" }}>Objeções</p>
-          <p style={{ fontSize: 14, marginBottom: 8 }}>{chamada.objecoes?.join(", ") || "Nenhuma"}</p>
-          <p style={{ fontSize: 12, color: "#777" }}>Resumo</p>
-          <p style={{ fontSize: 13, lineHeight: 1.5 }}>{chamada.resumo ?? "—"}</p>
+        <div>
+          {emAndamento && <PainelCoach chamadaId={chamada.id} />}
+          <div style={cardStyle}>
+            <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>Análise comportamental</p>
+            <p style={{ fontSize: 12, color: "#777" }}>Sentimento</p>
+            <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>{chamada.sentimento ?? "—"}</p>
+            <p style={{ fontSize: 12, color: "#777" }}>Score de interesse</p>
+            <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 8 }}>{chamada.score_interesse ?? "—"}</p>
+            <p style={{ fontSize: 12, color: "#777" }}>Objeções</p>
+            <p style={{ fontSize: 14, marginBottom: 8 }}>{chamada.objecoes?.join(", ") || "Nenhuma"}</p>
+            <p style={{ fontSize: 12, color: "#777" }}>Resumo</p>
+            <p style={{ fontSize: 13, lineHeight: 1.5 }}>{chamada.resumo ?? "—"}</p>
+          </div>
         </div>
       </div>
     </div>
