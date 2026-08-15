@@ -1,4 +1,5 @@
 import { query } from "@/lib/db";
+import Link from "next/link";
 
 async function getMetricas() {
   const [{ total, atendidas, agendadas, custo }] = await query<{
@@ -15,7 +16,6 @@ async function getMetricas() {
     FROM chamadas
     WHERE iniciado_em > now() - interval '7 days'
   `);
-
   return {
     total: Number(total),
     atendidas: Number(atendidas),
@@ -39,25 +39,21 @@ async function getChamadasRecentes() {
 export default async function DashboardPage() {
   const metricas = await getMetricas();
   const chamadas = await getChamadasRecentes();
-
   const cardStyle: React.CSSProperties = {
     background: "#fff",
     borderRadius: 8,
     padding: "1rem",
     border: "1px solid #e5e3da",
   };
-
   return (
     <div>
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1rem" }}>Últimos 7 dias</h1>
-
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: "1.5rem" }}>
         <div style={cardStyle}><p style={{ fontSize: 13, color: "#777" }}>Chamadas</p><p style={{ fontSize: 24, fontWeight: 500 }}>{metricas.total}</p></div>
         <div style={cardStyle}><p style={{ fontSize: 13, color: "#777" }}>Atendidas</p><p style={{ fontSize: 24, fontWeight: 500 }}>{metricas.atendidas}</p></div>
         <div style={cardStyle}><p style={{ fontSize: 13, color: "#777" }}>Agendamentos</p><p style={{ fontSize: 24, fontWeight: 500 }}>{metricas.agendadas}</p></div>
         <div style={cardStyle}><p style={{ fontSize: 13, color: "#777" }}>Custo total</p><p style={{ fontSize: 24, fontWeight: 500 }}>R$ {metricas.custo.toFixed(2)}</p></div>
       </div>
-
       <div style={cardStyle}>
         <p style={{ fontSize: 13, color: "#555", marginBottom: 10 }}>Chamadas recentes</p>
         <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
@@ -67,6 +63,7 @@ export default async function DashboardPage() {
               <th>Campanha</th>
               <th>Resultado</th>
               <th>Sentimento</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -76,10 +73,15 @@ export default async function DashboardPage() {
                 <td>{c.campanha_nome ?? "—"}</td>
                 <td>{c.resultado ?? "—"}</td>
                 <td>{c.sentimento ?? "—"}</td>
+                <td style={{ textAlign: "right" }}>
+                  <Link href={`/chamadas/${c.id}`} style={{ color: "#8a6d3b", textDecoration: "none", fontSize: 12 }}>
+                    Ver detalhes →
+                  </Link>
+                </td>
               </tr>
             ))}
             {chamadas.length === 0 && (
-              <tr><td colSpan={4} style={{ padding: "12px 0", color: "#999" }}>Nenhuma chamada ainda — rode db/seed.sql para ver dados de exemplo.</td></tr>
+              <tr><td colSpan={5} style={{ padding: "12px 0", color: "#999" }}>Nenhuma chamada ainda — rode db/seed.sql para ver dados de exemplo.</td></tr>
             )}
           </tbody>
         </table>
