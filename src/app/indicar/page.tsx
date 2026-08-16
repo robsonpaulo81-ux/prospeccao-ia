@@ -20,7 +20,7 @@ export default function PaginaIndicacao() {
   const [enviado, setEnviado] = useState(false);
   const [erro, setErro] = useState('');
 
-  function atualizarCampo(campo, valor) {
+  function atualizarCampo(campo: string, valor: string) {
     setForm((prev) => ({ ...prev, [campo]: valor }));
   }
 
