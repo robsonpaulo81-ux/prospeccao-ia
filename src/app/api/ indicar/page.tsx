@@ -120,3 +120,4 @@ const styles = {
   botao: { width: '100%', marginTop: 8, padding: '12px', fontSize: 15, fontWeight: 600, color: '#fff', background: '#1a1a1a', border: 'none', borderRadius: 8, cursor: 'pointer' },
   erro: { fontSize: 13, color: '#c0392b', margin: '4px 0 12px' },
 };
+
