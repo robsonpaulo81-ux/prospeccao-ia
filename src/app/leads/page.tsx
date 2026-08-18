@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { query } from "@/lib/db";
 import KanbanBoard from "./KanbanBoard";
+import ExportButtons from "../components/ExportButtons";
 
 export default async function LeadsPage() {
   const leads = await query(`
@@ -13,6 +14,7 @@ export default async function LeadsPage() {
   return (
     <div>
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1rem" }}>Leads</h1>
+      <ExportButtons csvUrl="/api/export/leads" />
       <KanbanBoard leadsIniciais={leads} />
     </div>
   );
