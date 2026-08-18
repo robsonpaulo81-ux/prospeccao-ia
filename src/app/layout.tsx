@@ -2,7 +2,6 @@ export const metadata = {
   title: "Prospecção IA",
   description: "Dashboard de prospecção com agentes de IA de voz e texto",
 };
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
@@ -13,6 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/" style={{ display: "block", padding: "8px 0", color: "#333", textDecoration: "none" }}>Visão geral</a>
             <a href="/campanhas" style={{ display: "block", padding: "8px 0", color: "#333", textDecoration: "none" }}>Campanhas</a>
             <a href="/leads" style={{ display: "block", padding: "8px 0", color: "#333", textDecoration: "none" }}>Leads</a>
+            <a href="/indicadores" style={{ display: "block", padding: "8px 0", color: "#333", textDecoration: "none" }}>Indicadores</a>
           </nav>
           <main style={{ padding: "1.5rem" }}>{children}</main>
         </div>
