@@ -7,7 +7,7 @@ import { query } from "@/lib/db";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { indicadorNome, indicadorTelefone, leadNome, leadTelefone, interesse } = body;
+    const { indicadorNome, indicadorTelefone, leadNome, leadTelefone, interesse, documentoUrl } = body;
 
     if (!indicadorNome || !leadNome || !leadTelefone) {
       return NextResponse.json(
@@ -39,9 +39,9 @@ export async function POST(req: NextRequest) {
     const tipoImovelValido = interesse === "casa" || interesse === "apartamento" ? interesse : null;
 
     const [leadInserido] = await query(
-      `INSERT INTO leads (nome, telefone, tipo_imovel, fase, indicado_por, origem, tem_restricao, fase_atualizada_em)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *`,
-      [leadNome, leadTelefone, tipoImovelValido, "novo", indicador.id, "indicacao", false]
+      `INSERT INTO leads (nome, telefone, tipo_imovel, fase, indicado_por, origem, tem_restricao, fase_atualizada_em, documento_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8) RETURNING *`,
+      [leadNome, leadTelefone, tipoImovelValido, "novo", indicador.id, "indicacao", false, documentoUrl ?? null]
     );
 
     return NextResponse.json({ ok: true, lead: leadInserido, indicador }, { status: 201 });
