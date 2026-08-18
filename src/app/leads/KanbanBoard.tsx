@@ -10,6 +10,8 @@ type Lead = {
   cidade_interesse: string | null;
   tem_restricao: boolean;
   motivo_sem_interesse: string | null;
+  documento_url: string | null;
+  notas: string | null;
 };
 
 const COLUNAS: { fase: string; titulo: string; cor: string; corTexto: string }[] = [
@@ -35,6 +37,16 @@ const MOTIVO_LABEL: Record<string, string> = {
   ja_comprou: "Já comprou",
   interesse_futuro: "Interesse futuro",
 };
+
+function documentosDoLead(documentoUrl: string | null): string[] {
+  if (!documentoUrl) return [];
+  try {
+    const parsed = JSON.parse(documentoUrl);
+    return Array.isArray(parsed) ? parsed : [documentoUrl];
+  } catch {
+    return [documentoUrl];
+  }
+}
 
 export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }) {
   const [leads, setLeads] = useState<Lead[]>(leadsIniciais);
@@ -101,35 +113,73 @@ export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {leadsDaColuna.map((lead) => (
-                  <div
-                    key={lead.id}
-                    draggable
-                    onDragStart={() => setArrastandoId(lead.id)}
-                    onDragEnd={() => setArrastandoId(null)}
-                    style={{
-                      background: col.cor,
-                      borderRadius: 6,
-                      padding: "0.5rem 0.6rem",
-                      cursor: "grab",
-                      opacity: arrastandoId === lead.id ? 0.5 : 1,
-                    }}
-                  >
-                    <p style={{ fontSize: 13, fontWeight: 500, color: col.corTexto, marginBottom: 4 }}>
-                      {lead.nome ?? "Lead sem nome"}
-                    </p>
-                    <p style={{ fontSize: 11, color: col.corTexto }}>
-                      {[
-                        lead.tipo_imovel && IMOVEL_LABEL[lead.tipo_imovel],
-                        lead.cidade_interesse && CIDADE_LABEL[lead.cidade_interesse],
-                        lead.tem_restricao && "Restrição",
-                        lead.motivo_sem_interesse && MOTIVO_LABEL[lead.motivo_sem_interesse],
-                      ]
-                        .filter(Boolean)
-                        .join(" · ") || "Sem detalhes ainda"}
-                    </p>
-                  </div>
-                ))}
+                {leadsDaColuna.map((lead) => {
+                  const docs = documentosDoLead(lead.documento_url);
+                  return (
+                    <div
+                      key={lead.id}
+                      draggable
+                      onDragStart={() => setArrastandoId(lead.id)}
+                      onDragEnd={() => setArrastandoId(null)}
+                      style={{
+                        background: col.cor,
+                        borderRadius: 6,
+                        padding: "0.5rem 0.6rem",
+                        cursor: "grab",
+                        opacity: arrastandoId === lead.id ? 0.5 : 1,
+                      }}
+                    >
+                      <p style={{ fontSize: 13, fontWeight: 500, color: col.corTexto, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                        {lead.nome ?? "Lead sem nome"}
+                        {docs.length > 0 && (
+                          <span title={`${docs.length} documento(s) anexado(s)`} style={{ fontSize: 11 }}>
+                            📎{docs.length > 1 ? docs.length : ""}
+                          </span>
+                        )}
+                      </p>
+                      <p style={{ fontSize: 11, color: col.corTexto }}>
+                        {[
+                          lead.tipo_imovel && IMOVEL_LABEL[lead.tipo_imovel],
+                          lead.cidade_interesse && CIDADE_LABEL[lead.cidade_interesse],
+                          lead.tem_restricao && "Restrição",
+                          lead.motivo_sem_interesse && MOTIVO_LABEL[lead.motivo_sem_interesse],
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "Sem detalhes ainda"}
+                      </p>
+
+                      {docs.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                          {docs.map((url, i) => (
+                            <a
+                              key={url}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                fontSize: 10,
+                                color: col.corTexto,
+                                background: "rgba(255,255,255,0.6)",
+                                padding: "2px 6px",
+                                borderRadius: 4,
+                                textDecoration: "none",
+                              }}
+                            >
+                              Doc {i + 1}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+
+                      {lead.notas && (
+                        <p style={{ fontSize: 11, color: col.corTexto, marginTop: 6, fontStyle: "italic", opacity: 0.85 }}>
+                          “{lead.notas}”
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
                 {leadsDaColuna.length === 0 && (
                   <p style={{ fontSize: 12, color: "#aaa" }}>Nenhum lead aqui</p>
                 )}
