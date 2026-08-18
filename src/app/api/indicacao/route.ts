@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const [leadInserido] = await query(
       `INSERT INTO leads (nome, telefone, tipo_imovel, fase, indicado_por, origem, tem_restricao, fase_atualizada_em)
        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *`,
-      [leadNome, leadTelefone, interesse ?? null, "atendido_qualificacao", indicador.id, "indicacao", false]
+      [leadNome, leadTelefone, interesse ?? null, "novo", indicador.id, "indicacao", false]
     );
 
     return NextResponse.json({ ok: true, lead: leadInserido, indicador }, { status: 201 });
