@@ -2,6 +2,7 @@ import "./globals.css";
 import ThemeToggle from "./components/ThemeToggle";
 
 export const metadata = {
+  metadataBase: new URL("https://prospeccao-ia-nu.vercel.app"),
   title: "Prospecção IA",
   description: "Dashboard de prospecção com agentes de IA de voz e texto",
 };
