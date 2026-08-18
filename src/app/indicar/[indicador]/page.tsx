@@ -19,13 +19,24 @@ export default function PaginaIndicacao() {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [erro, setErro] = useState('');
+  const [arquivo, setArquivo] = useState<File | null>(null);
 
   function atualizarCampo(campo: string, valor: string) {
     setForm((prev) => ({ ...prev, [campo]: valor }));
   }
 
-  async function enviarIndicacao() {
-    const corpo = JSON.stringify(form);
+  async function enviarArquivoSeExistir(): Promise<string | null> {
+    if (!arquivo) return null;
+    const dados = new FormData();
+    dados.append('arquivo', arquivo);
+    const resp = await fetch('/api/upload', { method: 'POST', body: dados });
+    if (!resp.ok) throw new Error('Falha ao enviar o documento.');
+    const data = await resp.json();
+    return data.url as string;
+  }
+
+  async function enviarIndicacao(documentoUrl: string | null) {
+    const corpo = JSON.stringify({ ...form, documentoUrl });
     const resp = await fetch('/api/indicacao', { method: 'POST', headers: HEADERS_JSON, body: corpo });
     return resp;
   }
@@ -39,7 +50,8 @@ export default function PaginaIndicacao() {
     }
     setEnviando(true);
     try {
-      const resp = await enviarIndicacao();
+      const documentoUrl = await enviarArquivoSeExistir();
+      const resp = await enviarIndicacao(documentoUrl);
       if (!resp.ok) {
         const data = await resp.json();
         throw new Error(data.error || 'Erro ao enviar indicacao.');
@@ -107,6 +119,16 @@ export default function PaginaIndicacao() {
             <option value="apartamento">Apartamento</option>
             <option value="nao_sabe">Ainda nao sabe</option>
           </select>
+        </div>
+
+        <div style={styles.field}>
+          <label style={styles.label}>Documentos do indicado (opcional)</label>
+          <input
+            style={styles.input}
+            type="file"
+            accept="image/*,.pdf"
+            onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+          />
         </div>
 
         {erro && <p style={styles.erro}>{erro}</p>}
