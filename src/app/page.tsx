@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { query } from "@/lib/db";
-import DashboardCharts from "../components/DashboardCharts";
+import DashboardCharts from "./components/DashboardCharts";
 
 const CORES_FASE: Record<string, { titulo: string; cor: string }> = {
   novo: { titulo: "Novo", cor: "#b4b2a9" },
