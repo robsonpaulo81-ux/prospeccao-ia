@@ -6,7 +6,7 @@ import ExportButtons from "../components/ExportButtons";
 
 export default async function LeadsPage() {
   const leads = await query(`
-    SELECT id, nome, fase, tipo_imovel, cidade_interesse, tem_restricao, motivo_sem_interesse
+    SELECT id, nome, fase, tipo_imovel, cidade_interesse, tem_restricao, motivo_sem_interesse, documento_url, notas
     FROM leads
     ORDER BY fase_atualizada_em DESC
   `);
