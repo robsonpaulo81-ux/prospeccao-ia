@@ -15,6 +15,7 @@ export default function PaginaIndicacao() {
     leadNome: '',
     leadTelefone: '',
     interesse: 'casa',
+    notas: '',
   });
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
@@ -123,6 +124,16 @@ export default function PaginaIndicacao() {
             <option value="apartamento">Apartamento</option>
             <option value="nao_sabe">Ainda nao sabe</option>
           </select>
+        </div>
+
+        <div style={styles.field}>
+          <label style={styles.label}>Observações (opcional)</label>
+          <textarea
+            style={{ ...styles.input, minHeight: 60, resize: 'vertical', fontFamily: 'inherit' }}
+            value={form.notas}
+            onChange={(e) => atualizarCampo('notas', e.target.value)}
+            placeholder="Ex: já mora na região, quer mudar até dezembro..."
+          />
         </div>
 
         <div style={styles.field}>
