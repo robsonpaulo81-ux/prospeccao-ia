@@ -68,11 +68,11 @@ export default async function VisaoGeralPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {topIndicadores.map((ind: any, i: number) => (
-                <div key={ind.nome} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                  <span>
+                <div key={ind.nome} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#333" }}>
+                  <span style={{ color: "#333" }}>
                     {["🥇", "🥈", "🥉"][i] ?? "•"} {ind.nome}
                   </span>
-                  <strong>{ind.total}</strong>
+                  <strong style={{ color: "#111" }}>{ind.total}</strong>
                 </div>
               ))}
             </div>
