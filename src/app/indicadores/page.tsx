@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { query } from "@/lib/db";
+import ExportButtons from "../components/ExportButtons";
 
 type LinhaIndicador = {
   id: number;
@@ -48,9 +49,11 @@ export default async function IndicadoresPage() {
   return (
     <div>
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "0.25rem" }}>Indicadores</h1>
-      <p style={{ fontSize: 13, color: "#777", marginBottom: "1.25rem" }}>
+      <p style={{ fontSize: 13, color: "#777", marginBottom: "1rem" }}>
         Quem mais indica clientes e em que fase estão as indicações
       </p>
+
+      <ExportButtons csvUrl="/api/export/indicadores" />
 
       {indicadores.length === 0 ? (
         <p style={{ fontSize: 13, color: "#999" }}>Nenhuma indicação recebida ainda.</p>
