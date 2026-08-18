@@ -69,7 +69,7 @@ export default function PaginaIndicacao() {
     <div style={styles.wrapper}>
       <form style={styles.card} onSubmit={handleSubmit}>
         <div style={styles.perfil}>
-          <div style={styles.avatarPlaceholder}>RP</div>
+          <img src="/WhatsApp%20Image%202026-07-12%20at%2017.32.09.jpeg" alt="Róbson Paullo" style={styles.avatarFoto} />
           <div>
             <p style={styles.nomeCorretor}>Róbson Paullo</p>
             <p style={styles.creci}>CRECI 39673</p>
@@ -123,7 +123,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   wrapper: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: '#f4f3ef' },
   card: { width: '100%', maxWidth: 400, background: '#fff', borderRadius: 16, padding: '28px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
   perfil: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 },
-  avatarPlaceholder: { width: 48, height: 48, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 },
+  avatarFoto: { width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 },
   nomeCorretor: { fontWeight: 700, fontSize: 15, margin: 0 },
   creci: { fontSize: 12, color: '#777', margin: '2px 0 0' },
   title: { fontSize: 18, fontWeight: 600, margin: '0 0 16px' },
