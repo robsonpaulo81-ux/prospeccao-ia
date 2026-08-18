@@ -163,18 +163,18 @@ export default function PaginaIndicacao() {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  wrapper: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: '#f4f3ef' },
-  card: { width: '100%', maxWidth: 400, background: '#fff', borderRadius: 16, padding: '28px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+  wrapper: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'var(--bg)' },
+  card: { width: '100%', maxWidth: 400, background: 'var(--card-bg)', borderRadius: 16, padding: '28px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' },
   perfil: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 },
   avatarFoto: { width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 },
-  nomeCorretor: { fontWeight: 700, fontSize: 15, margin: 0 },
-  creci: { fontSize: 12, color: '#777', margin: '2px 0 0' },
-  title: { fontSize: 18, fontWeight: 600, margin: '0 0 16px' },
+  nomeCorretor: { fontWeight: 700, fontSize: 15, margin: 0, color: 'var(--text)' },
+  creci: { fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' },
+  title: { fontSize: 18, fontWeight: 600, margin: '0 0 16px', color: 'var(--text)' },
   field: { marginBottom: 14 },
-  label: { display: 'block', fontSize: 13, color: '#555', marginBottom: 4 },
-  input: { width: '100%', padding: '10px 12px', fontSize: 15, border: '1px solid #ddd', borderRadius: 8, boxSizing: 'border-box' },
-  divider: { border: 'none', borderTop: '1px solid #eee', margin: '18px 0' },
+  label: { display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 },
+  input: { width: '100%', padding: '10px 12px', fontSize: 15, border: '1px solid var(--border)', borderRadius: 8, boxSizing: 'border-box', background: 'var(--card-bg)', color: 'var(--text)' },
+  divider: { border: 'none', borderTop: '1px solid var(--border)', margin: '18px 0' },
   botao: { width: '100%', marginTop: 8, padding: '12px', fontSize: 15, fontWeight: 600, color: '#fff', background: '#1a1a1a', border: 'none', borderRadius: 8, cursor: 'pointer' },
   erro: { fontSize: 13, color: '#c0392b', margin: '4px 0 12px' },
-  subtitle: { fontSize: 14, color: '#666', margin: '4px 0 20px', textAlign: 'center' },
+  subtitle: { fontSize: 14, color: 'var(--text-muted)', margin: '4px 0 20px', textAlign: 'center' },
 };
