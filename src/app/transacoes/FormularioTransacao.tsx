@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import CampoMoeda from '../components/CampoMoeda';
 
 const ROTULOS_TIPO: Record<string, string> = {
   reserva: 'Reserva',
@@ -38,7 +39,13 @@ export default function FormularioTransacao({ tipoInicial }: { tipoInicial: stri
       const resp = await fetch('/api/transacoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: tipoInicial, ...form }),
+        body: JSON.stringify({
+          tipo: tipoInicial,
+          ...form,
+          valorBruto: form.valorBruto ? Number(form.valorBruto) / 100 : '',
+          valorEntrada: form.valorEntrada ? Number(form.valorEntrada) / 100 : '',
+          comissaoCorretor: form.comissaoCorretor ? Number(form.comissaoCorretor) / 100 : '',
+        }),
       });
       if (!resp.ok) throw new Error('Falha ao salvar.');
       setForm({
@@ -108,9 +115,9 @@ export default function FormularioTransacao({ tipoInicial }: { tipoInicial: stri
       <input style={estiloInput} placeholder="Unidade" value={form.unidade} onChange={(e) => campo('unidade', e.target.value)} />
       <input style={estiloInput} placeholder="Corretor" value={form.corretor} onChange={(e) => campo('corretor', e.target.value)} />
       <input style={estiloInput} placeholder="Cliente" value={form.cliente} onChange={(e) => campo('cliente', e.target.value)} />
-      <input style={estiloInput} type="number" step="0.01" placeholder="Valor bruto" value={form.valorBruto} onChange={(e) => campo('valorBruto', e.target.value)} />
-      <input style={estiloInput} type="number" step="0.01" placeholder="Valor de entrada" value={form.valorEntrada} onChange={(e) => campo('valorEntrada', e.target.value)} />
-      <input style={estiloInput} type="number" step="0.01" placeholder="Comissão do corretor" value={form.comissaoCorretor} onChange={(e) => campo('comissaoCorretor', e.target.value)} />
+      <CampoMoeda valorCentavos={form.valorBruto} onChange={(v) => campo('valorBruto', v)} placeholder="Valor bruto" style={estiloInput} />
+      <CampoMoeda valorCentavos={form.valorEntrada} onChange={(v) => campo('valorEntrada', v)} placeholder="Valor de entrada" style={estiloInput} />
+      <CampoMoeda valorCentavos={form.comissaoCorretor} onChange={(v) => campo('comissaoCorretor', v)} placeholder="Comissão do corretor" style={estiloInput} />
       <input style={estiloInput} placeholder="Forma de pagamento" value={form.formaPagamento} onChange={(e) => campo('formaPagamento', e.target.value)} />
       <input style={estiloInput} type="date" value={form.dataTransacao} onChange={(e) => campo('dataTransacao', e.target.value)} />
 
