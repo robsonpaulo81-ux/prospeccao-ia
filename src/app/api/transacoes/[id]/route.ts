@@ -15,7 +15,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       comissaoCorretor,
       formaPagamento,
       dataTransacao,
+      cancelado,
     } = body;
+
+    // Se o corpo só trouxe o campo "cancelado", atualiza só ele
+    // (evita apagar os outros campos com null quando só queremos cancelar/reativar)
+    if (cancelado !== undefined && empreendimento === undefined) {
+      const [atualizadoCancelamento] = await query(
+        `UPDATE transacoes SET cancelado = $1 WHERE id = $2 RETURNING *`,
+        [cancelado, params.id]
+      );
+      if (!atualizadoCancelamento) {
+        return NextResponse.json({ error: "Registro não encontrado." }, { status: 404 });
+      }
+      return NextResponse.json(atualizadoCancelamento);
+    }
 
     const [atualizado] = await query(
       `UPDATE transacoes SET
