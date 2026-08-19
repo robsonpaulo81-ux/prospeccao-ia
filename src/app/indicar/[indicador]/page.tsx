@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Róbson Paullo - Indique um cliente",
     description: "CRECI 39673 · Corretor de imóveis",
-    images: ["/WhatsApp%20Image%202026-07-12%20at%2017.32.09.jpeg"],
+    images: ["/foto-perfil.jpg"],
   },
 };
 
