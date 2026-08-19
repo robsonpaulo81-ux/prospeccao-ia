@@ -5,6 +5,7 @@ import FormularioTransacao from "./FormularioTransacao";
 import TransacaoLinha from "./TransacaoLinha";
 import KanbanFinanceiro from "./KanbanFinanceiro";
 import GraficoFinanceiro from "../components/GraficoFinanceiro";
+import AutoAtualizar from "../components/AutoAtualizar";
 
 const ABAS = [
   { tipo: "reserva", titulo: "Reservas" },
@@ -54,6 +55,7 @@ export default async function FinanceiroPage({
 
   return (
     <div>
+      <AutoAtualizar />
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1rem" }}>Financeiro</h1>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
