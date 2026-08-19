@@ -54,14 +54,20 @@ export default async function VisaoGeralPage() {
   `);
 
   // NOVO: Financeiro por fase (Reservas / Repasses / Distratos)
-  const financeiroPorFase = await query(`
-    SELECT tipo,
-           COUNT(*)::int AS quantidade,
-           COALESCE(SUM(valor_bruto), 0)::numeric AS valor_total
-    FROM financeiro
-    WHERE status != 'cancelada'
-    GROUP BY tipo
-  `);
+  let financeiroPorFase: any[] = [];
+  try {
+    financeiroPorFase = await query(`
+      SELECT tipo,
+             COUNT(*)::int AS quantidade,
+             COALESCE(SUM(valor_bruto), 0)::numeric AS valor_total
+      FROM financeiro
+      WHERE status != 'cancelada'
+      GROUP BY tipo
+    `);
+  } catch (erro) {
+    console.error("Erro ao buscar financeiro por fase:", erro);
+    financeiroPorFase = [];
+  }
 
   const dadosFinanceiro = Object.entries(CORES_FASE_FINANCEIRO).map(([tipo, info]) => {
     const encontrado = financeiroPorFase.find((f: any) => f.tipo === tipo);
