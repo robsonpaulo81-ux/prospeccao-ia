@@ -111,6 +111,17 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
     }
   }
 
+  async function excluirRegistro() {
+    if (!confirm('Tem certeza? Isso vai apagar o registro para sempre, sem volta.')) return;
+    try {
+      const resp = await fetch(`/api/transacoes/${transacao.id}`, { method: 'DELETE' });
+      if (!resp.ok) throw new Error('Falha ao excluir.');
+      router.refresh();
+    } catch {
+      alert('Não foi possível excluir o registro.');
+    }
+  }
+
   const estiloInput: React.CSSProperties = {
     width: '100%',
     padding: '4px 6px',
@@ -175,14 +186,17 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
           Editar
         </button>
         {transacao.cancelado ? (
-          <button onClick={reativarRegistro} style={{ fontSize: 11, padding: '4px 8px', border: '1px solid #0f9d78', borderRadius: 4, background: 'transparent', color: '#0f9d78', cursor: 'pointer' }}>
+          <button onClick={reativarRegistro} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: '1px solid #0f9d78', borderRadius: 4, background: 'transparent', color: '#0f9d78', cursor: 'pointer' }}>
             Reativar
           </button>
         ) : (
-          <button onClick={cancelarRegistro} style={{ fontSize: 11, padding: '4px 8px', border: '1px solid #c0392b', borderRadius: 4, background: 'transparent', color: '#c0392b', cursor: 'pointer' }}>
+          <button onClick={cancelarRegistro} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: '1px solid #c0392b', borderRadius: 4, background: 'transparent', color: '#c0392b', cursor: 'pointer' }}>
             Cancelar
           </button>
         )}
+        <button onClick={excluirRegistro} style={{ fontSize: 11, padding: '4px 8px', border: '1px solid #791f1f', borderRadius: 4, background: '#791f1f', color: '#fff', cursor: 'pointer' }}>
+          Excluir
+        </button>
       </td>
     </tr>
   );
