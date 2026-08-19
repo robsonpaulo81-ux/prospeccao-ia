@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import CampoMoeda from '../components/CampoMoeda';
 
 type Transacao = {
   id: number;
@@ -37,14 +38,19 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
   const router = useRouter();
   const [editando, setEditando] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  function paraCentavos(valorDecimal: string | null) {
+    if (!valorDecimal) return '';
+    return Math.round(Number(valorDecimal) * 100).toString();
+  }
+
   const [form, setForm] = useState({
     empreendimento: transacao.empreendimento || '',
     unidade: transacao.unidade || '',
     corretor: transacao.corretor || '',
     cliente: transacao.cliente || '',
-    valorBruto: transacao.valor_bruto || '',
-    valorEntrada: transacao.valor_entrada || '',
-    comissaoCorretor: transacao.comissao_corretor || '',
+    valorBruto: paraCentavos(transacao.valor_bruto),
+    valorEntrada: paraCentavos(transacao.valor_entrada),
+    comissaoCorretor: paraCentavos(transacao.comissao_corretor),
     formaPagamento: transacao.forma_pagamento || '',
     dataTransacao: paraInputDate(transacao.data_transacao),
   });
@@ -59,7 +65,12 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
       const resp = await fetch(`/api/transacoes/${transacao.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          valorBruto: form.valorBruto ? Number(form.valorBruto) / 100 : '',
+          valorEntrada: form.valorEntrada ? Number(form.valorEntrada) / 100 : '',
+          comissaoCorretor: form.comissaoCorretor ? Number(form.comissaoCorretor) / 100 : '',
+        }),
       });
       if (!resp.ok) throw new Error('Falha ao salvar.');
       setEditando(false);
@@ -118,9 +129,9 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
         <td style={{ padding: 6 }}><input style={estiloInput} value={form.unidade} onChange={(e) => campo('unidade', e.target.value)} /></td>
         <td style={{ padding: 6 }}><input style={estiloInput} value={form.corretor} onChange={(e) => campo('corretor', e.target.value)} /></td>
         <td style={{ padding: 6 }}><input style={estiloInput} value={form.cliente} onChange={(e) => campo('cliente', e.target.value)} /></td>
-        <td style={{ padding: 6 }}><input style={estiloInput} type="number" step="0.01" value={form.valorBruto} onChange={(e) => campo('valorBruto', e.target.value)} /></td>
-        <td style={{ padding: 6 }}><input style={estiloInput} type="number" step="0.01" value={form.valorEntrada} onChange={(e) => campo('valorEntrada', e.target.value)} /></td>
-        <td style={{ padding: 6 }}><input style={estiloInput} type="number" step="0.01" value={form.comissaoCorretor} onChange={(e) => campo('comissaoCorretor', e.target.value)} /></td>
+        <td style={{ padding: 6 }}><CampoMoeda valorCentavos={form.valorBruto} onChange={(v) => campo('valorBruto', v)} style={estiloInput} /></td>
+        <td style={{ padding: 6 }}><CampoMoeda valorCentavos={form.valorEntrada} onChange={(v) => campo('valorEntrada', v)} style={estiloInput} /></td>
+        <td style={{ padding: 6 }}><CampoMoeda valorCentavos={form.comissaoCorretor} onChange={(v) => campo('comissaoCorretor', v)} style={estiloInput} /></td>
         <td style={{ padding: 6 }}><input style={estiloInput} value={form.formaPagamento} onChange={(e) => campo('formaPagamento', e.target.value)} /></td>
         <td style={{ padding: 6, whiteSpace: 'nowrap' }}>
           <button onClick={salvar} disabled={salvando} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: 'none', borderRadius: 4, background: '#1a1a1a', color: '#fff', cursor: 'pointer' }}>
