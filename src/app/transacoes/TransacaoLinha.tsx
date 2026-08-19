@@ -16,6 +16,8 @@ type Transacao = {
   forma_pagamento: string | null;
   data_transacao: string | null;
   cancelado: boolean;
+  lead_id?: string | null;
+  sla_dias?: number | null;
 };
 
 function formatarMoeda(valor: string | null) {
@@ -32,6 +34,13 @@ function formatarData(data: string | null) {
 function paraInputDate(data: string | null) {
   if (!data) return '';
   return new Date(data).toISOString().slice(0, 10);
+}
+
+function corSla(dias: number | null | undefined) {
+  if (dias == null) return '#999';
+  if (dias <= 7) return '#0f9d78';
+  if (dias <= 20) return '#e8973a';
+  return '#c0392b';
 }
 
 export default function TransacaoLinha({ transacao }: { transacao: Transacao }) {
@@ -144,6 +153,7 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
         <td style={{ padding: 6 }}><CampoMoeda valorCentavos={form.valorEntrada} onChange={(v) => campo('valorEntrada', v)} style={estiloInput} /></td>
         <td style={{ padding: 6 }}><CampoMoeda valorCentavos={form.comissaoCorretor} onChange={(v) => campo('comissaoCorretor', v)} style={estiloInput} /></td>
         <td style={{ padding: 6 }}><input style={estiloInput} value={form.formaPagamento} onChange={(e) => campo('formaPagamento', e.target.value)} /></td>
+        <td style={{ padding: '8px 10px', textAlign: 'center' }}>-</td>
         <td style={{ padding: 6, whiteSpace: 'nowrap' }}>
           <button onClick={salvar} disabled={salvando} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: 'none', borderRadius: 4, background: '#1a1a1a', color: '#fff', cursor: 'pointer' }}>
             {salvando ? '...' : 'Salvar'}
@@ -181,6 +191,24 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
       <td style={{ padding: '8px 10px' }}>{formatarMoeda(transacao.valor_entrada)}</td>
       <td style={{ padding: '8px 10px' }}>{formatarMoeda(transacao.comissao_corretor)}</td>
       <td style={{ padding: '8px 10px' }}>{transacao.forma_pagamento || '-'}</td>
+      <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+        {transacao.sla_dias != null ? (
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: corSla(transacao.sla_dias),
+              background: `${corSla(transacao.sla_dias)}22`,
+              padding: '3px 8px',
+              borderRadius: 10,
+            }}
+          >
+            {transacao.sla_dias}d
+          </span>
+        ) : (
+          <span style={{ fontSize: 11, color: '#999' }}>-</span>
+        )}
+      </td>
       <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
         <button onClick={() => setEditando(true)} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: '1px solid var(--border)', borderRadius: 4, background: 'transparent', color: 'inherit', cursor: 'pointer' }}>
           Editar
