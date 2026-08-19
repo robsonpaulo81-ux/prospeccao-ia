@@ -25,11 +25,23 @@ export default async function FinanceiroPage({
   const modoKanban = searchParams?.view === "kanban";
   const modoMetricas = searchParams?.view === "metricas";
 
+  // NOVO: sla_dias calculado via LEFT JOIN com leads
+  const baseSelect = `
+    SELECT t.*,
+           CASE
+             WHEN t.lead_id IS NOT NULL AND t.data_transacao IS NOT NULL
+               THEN (t.data_transacao::date - l.criado_em::date)
+             ELSE NULL
+           END AS sla_dias
+    FROM transacoes t
+    LEFT JOIN leads l ON l.id = t.lead_id
+  `;
+
   const transacoes = modoKanban
-    ? await query(`SELECT * FROM transacoes ORDER BY id DESC`)
+    ? await query(`${baseSelect} ORDER BY t.id DESC`)
     : !modoMetricas
     ? await query(
-        `SELECT * FROM transacoes WHERE tipo = $1 ORDER BY data_transacao DESC NULLS LAST, id DESC`,
+        `${baseSelect} WHERE t.tipo = $1 ORDER BY t.data_transacao DESC NULLS LAST, t.id DESC`,
         [tipoAtivo]
       )
     : [];
@@ -163,6 +175,7 @@ export default async function FinanceiroPage({
               <th style={{ padding: "8px 10px" }}>Entrada</th>
               <th style={{ padding: "8px 10px" }}>Comissão</th>
               <th style={{ padding: "8px 10px" }}>Pagamento</th>
+              <th style={{ padding: "8px 10px", textAlign: "center" }}>SLA</th>
               <th style={{ padding: "8px 10px" }}>Ações</th>
             </tr>
           </thead>
@@ -172,7 +185,7 @@ export default async function FinanceiroPage({
             ))}
             {transacoes.length === 0 && (
               <tr>
-                <td colSpan={10} style={{ padding: "16px 10px", color: "var(--text-muted)" }}>
+                <td colSpan={11} style={{ padding: "16px 10px", color: "var(--text-muted)" }}>
                   Nenhum registro ainda.
                 </td>
               </tr>
