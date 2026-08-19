@@ -60,8 +60,7 @@ export default async function VisaoGeralPage() {
       SELECT tipo,
              COUNT(*)::int AS quantidade,
              COALESCE(SUM(valor_bruto), 0)::numeric AS valor_total
-      FROM financeiro
-      WHERE status != 'cancelada'
+      FROM transacoes
       GROUP BY tipo
     `);
   } catch (erro) {
