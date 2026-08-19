@@ -108,6 +108,26 @@ function CardLead({
     }
   }
 
+  async function virarReserva() {
+    if (!confirm(`Transformar "${lead.nome ?? "este lead"}" em uma reserva no Financeiro?`)) return;
+    try {
+      const resp = await fetch("/api/transacoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "reserva",
+          cliente: lead.nome || "",
+          leadId: lead.id,
+          dataTransacao: new Date().toISOString().slice(0, 10),
+        }),
+      });
+      if (!resp.ok) throw new Error("Falha ao criar reserva.");
+      alert("Reserva criada! Você pode completar os detalhes na tela Financeiro.");
+    } catch {
+      alert("Não foi possível criar a reserva.");
+    }
+  }
+
   const estiloInput: React.CSSProperties = {
     width: "100%",
     padding: "4px 6px",
@@ -200,9 +220,12 @@ function CardLead({
         </p>
       )}
 
-      <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+      <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" }}>
         <button onClick={() => setEditando(true)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>
           Editar
+        </button>
+        <button onClick={virarReserva} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #0f9d78", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#0f9d78", cursor: "pointer" }}>
+          Virar Reserva
         </button>
         <button onClick={cancelar} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #c0392b", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#c0392b", cursor: "pointer" }}>
           Cancelar
