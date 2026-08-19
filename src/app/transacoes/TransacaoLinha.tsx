@@ -14,6 +14,7 @@ type Transacao = {
   comissao_corretor: string | null;
   forma_pagamento: string | null;
   data_transacao: string | null;
+  cancelado: boolean;
 };
 
 function formatarMoeda(valor: string | null) {
@@ -71,13 +72,31 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
   }
 
   async function cancelarRegistro() {
-    if (!confirm('Tem certeza que deseja cancelar (excluir) este registro?')) return;
+    if (!confirm('Confirma o cancelamento desta reserva? Ela ficará marcada como cancelada, mas continua visível.')) return;
     try {
-      const resp = await fetch(`/api/transacoes/${transacao.id}`, { method: 'DELETE' });
+      const resp = await fetch(`/api/transacoes/${transacao.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cancelado: true }),
+      });
       if (!resp.ok) throw new Error('Falha ao cancelar.');
       router.refresh();
     } catch {
       alert('Não foi possível cancelar o registro.');
+    }
+  }
+
+  async function reativarRegistro() {
+    try {
+      const resp = await fetch(`/api/transacoes/${transacao.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cancelado: false }),
+      });
+      if (!resp.ok) throw new Error('Falha ao reativar.');
+      router.refresh();
+    } catch {
+      alert('Não foi possível reativar o registro.');
     }
   }
 
@@ -115,9 +134,23 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
     );
   }
 
+  const estiloLinhaCancelada: React.CSSProperties = transacao.cancelado
+    ? { background: 'rgba(192,57,43,0.08)', color: '#c0392b' }
+    : {};
+
   return (
-    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-      <td style={{ padding: '8px 10px' }}>{formatarData(transacao.data_transacao)}</td>
+    <tr
+      onClick={() => transacao.cancelado && setEditando(true)}
+      style={{ borderBottom: '1px solid var(--border)', cursor: transacao.cancelado ? 'pointer' : 'default', ...estiloLinhaCancelada }}
+    >
+      <td style={{ padding: '8px 10px' }}>
+        {transacao.cancelado && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#c0392b', display: 'block', marginBottom: 2 }}>
+            CANCELADA
+          </span>
+        )}
+        {formatarData(transacao.data_transacao)}
+      </td>
       <td style={{ padding: '8px 10px' }}>{transacao.empreendimento || '-'}</td>
       <td style={{ padding: '8px 10px' }}>{transacao.unidade || '-'}</td>
       <td style={{ padding: '8px 10px' }}>{transacao.corretor || '-'}</td>
@@ -126,13 +159,19 @@ export default function TransacaoLinha({ transacao }: { transacao: Transacao }) 
       <td style={{ padding: '8px 10px' }}>{formatarMoeda(transacao.valor_entrada)}</td>
       <td style={{ padding: '8px 10px' }}>{formatarMoeda(transacao.comissao_corretor)}</td>
       <td style={{ padding: '8px 10px' }}>{transacao.forma_pagamento || '-'}</td>
-      <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
-        <button onClick={() => setEditando(true)} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: '1px solid var(--border)', borderRadius: 4, background: 'transparent', color: 'var(--text)', cursor: 'pointer' }}>
+      <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => setEditando(true)} style={{ fontSize: 11, padding: '4px 8px', marginRight: 4, border: '1px solid var(--border)', borderRadius: 4, background: 'transparent', color: 'inherit', cursor: 'pointer' }}>
           Editar
         </button>
-        <button onClick={cancelarRegistro} style={{ fontSize: 11, padding: '4px 8px', border: '1px solid #c0392b', borderRadius: 4, background: 'transparent', color: '#c0392b', cursor: 'pointer' }}>
-          Cancelar
-        </button>
+        {transacao.cancelado ? (
+          <button onClick={reativarRegistro} style={{ fontSize: 11, padding: '4px 8px', border: '1px solid #0f9d78', borderRadius: 4, background: 'transparent', color: '#0f9d78', cursor: 'pointer' }}>
+            Reativar
+          </button>
+        ) : (
+          <button onClick={cancelarRegistro} style={{ fontSize: 11, padding: '4px 8px', border: '1px solid #c0392b', borderRadius: 4, background: 'transparent', color: '#c0392b', cursor: 'pointer' }}>
+            Cancelar
+          </button>
+        )}
       </td>
     </tr>
   );
