@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-// Recebe o formulário público de indicação e grava:
-// 1. o indicador (cria se não existir, reaproveita se já existir pelo telefone)
-// 2. o lead indicado, já ligado ao indicador, na fase inicial do Kanban
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -17,14 +14,26 @@ export async function POST(req: NextRequest) {
     }
 
     let indicador = null;
+
+    // 1. Tenta achar o indicador pelo telefone, se informado
     if (indicadorTelefone) {
-      const existentes = await query(
+      const porTelefone = await query(
         `SELECT * FROM indicadores WHERE telefone = $1 LIMIT 1`,
         [indicadorTelefone]
       );
-      indicador = existentes[0] ?? null;
+      indicador = porTelefone[0] ?? null;
     }
 
+    // 2. Se não achou pelo telefone, tenta pelo nome (ignorando maiúsculas/minúsculas)
+    if (!indicador) {
+      const porNome = await query(
+        `SELECT * FROM indicadores WHERE LOWER(nome) = LOWER($1) LIMIT 1`,
+        [indicadorNome]
+      );
+      indicador = porNome[0] ?? null;
+    }
+
+    // 3. Se ainda não existe, cria um novo indicador
     if (!indicador) {
       const codigo = `${indicadorNome.toLowerCase().replace(/\s+/g, "-")}-${Date.now()
         .toString()
@@ -34,10 +43,12 @@ export async function POST(req: NextRequest) {
         [indicadorNome, indicadorTelefone ?? null, codigo]
       );
       indicador = novos[0];
+    } else if (indicadorTelefone && !indicador.telefone) {
+      // Se achou o indicador pelo nome mas ele ainda não tinha telefone salvo, atualiza
+      await query(`UPDATE indicadores SET telefone = $1 WHERE id = $2`, [indicadorTelefone, indicador.id]);
     }
 
     const tipoImovelValido = interesse === "casa" || interesse === "apartamento" ? interesse : null;
-
     const documentosArray: string[] = Array.isArray(documentoUrls) ? documentoUrls : [];
 
     const [leadInserido] = await query(
