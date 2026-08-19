@@ -107,6 +107,11 @@ export default function KanbanFinanceiro({ transacoesIniciais }: { transacoesIni
                     <p style={{ fontSize: 11, color: col.corTexto }}>
                       {[t.empreendimento, t.unidade].filter(Boolean).join(" · ") || "Sem detalhes"}
                     </p>
+                    {t.corretor && (
+                      <p style={{ fontSize: 11, color: col.corTexto, marginTop: 2 }}>
+                        Corretor: {t.corretor}
+                      </p>
+                    )}
                     <p style={{ fontSize: 12, color: col.corTexto, marginTop: 4, fontWeight: 600 }}>
                       {formatarMoeda(t.valor_bruto)}
                     </p>
