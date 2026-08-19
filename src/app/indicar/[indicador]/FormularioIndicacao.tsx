@@ -86,7 +86,7 @@ export default function FormularioIndicacao() {
     <div style={styles.wrapper}>
       <form style={styles.card} onSubmit={handleSubmit}>
         <div style={styles.perfil}>
-          <img src="/foto-perfil.jpg" alt="Róbson Paullo" style={styles.avatarFoto} />
+          <img src="/foto-perfil-2-infos.jpg" alt="Róbson Paullo" style={styles.avatarFoto} />
           <div>
             <p style={styles.nomeCorretor}>Róbson Paullo</p>
             <p style={styles.creci}>CRECI 39673</p>
