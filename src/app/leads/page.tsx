@@ -1,23 +1,75 @@
-export const dynamic = "force-dynamic";
-
+import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import KanbanBoard from "./KanbanBoard";
-import ExportButtons from "../components/ExportButtons";
-import AutoAtualizar from "../components/AutoAtualizar";
 
-export default async function LeadsPage() {
-  const leads = await query(`
-    SELECT id, nome, telefone, fase, tipo_imovel, cidade_interesse, tem_restricao, motivo_sem_interesse, documento_url, notas
-    FROM leads
-    ORDER BY fase_atualizada_em DESC
-  `);
+export async function GET(req: NextRequest) {
+  const tipo = req.nextUrl.searchParams.get("tipo");
 
-  return (
-    <div>
-      <AutoAtualizar />
-      <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1rem" }}>Leads</h1>
-      <ExportButtons csvUrl="/api/export/leads" />
-      <KanbanBoard leadsIniciais={leads} />
-    </div>
-  );
+  // inclui a data de indicação do lead vinculado e o SLA em dias (fuso America/Sao_Paulo)
+  const base = `
+    SELECT t.*,
+           l.criado_em AS lead_criado_em,
+           CASE
+             WHEN t.lead_id IS NOT NULL AND t.data_transacao IS NOT NULL
+               THEN (t.data_transacao::date - (l.criado_em AT TIME ZONE 'America/Sao_Paulo')::date)
+             ELSE NULL
+           END AS sla_dias
+    FROM transacoes t
+    LEFT JOIN leads l ON l.id = t.lead_id
+  `;
+
+  const transacoes = tipo
+    ? await query(`${base} WHERE t.tipo = $1 ORDER BY t.data_transacao DESC NULLS LAST, t.id DESC`, [tipo])
+    : await query(`${base} ORDER BY t.data_transacao DESC NULLS LAST, t.id DESC`);
+
+  return NextResponse.json(transacoes);
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const {
+      tipo,
+      empreendimento,
+      unidade,
+      corretor,
+      cliente,
+      valorBruto,
+      valorEntrada,
+      comissaoCorretor,
+      formaPagamento,
+      dataTransacao,
+      leadId, // NOVO: opcional, vincula a transação a um lead
+    } = body;
+
+    if (!tipo || !["reserva", "repasse", "distrato"].includes(tipo)) {
+      return NextResponse.json({ error: "Tipo inválido." }, { status: 400 });
+    }
+
+    const [inserido] = await query(
+      `INSERT INTO transacoes
+        (tipo, empreendimento, unidade, corretor, cliente, valor_bruto, valor_entrada, comissao_corretor, forma_pagamento, data_transacao, lead_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [
+        tipo,
+        empreendimento || null,
+        unidade || null,
+        corretor || null,
+        cliente || null,
+        valorBruto || null,
+        valorEntrada || null,
+        comissaoCorretor || null,
+        formaPagamento || null,
+        dataTransacao || null,
+        leadId || null,
+      ]
+    );
+
+    return NextResponse.json(inserido, { status: 201 });
+  } catch (err: any) {
+    console.error("Erro ao criar transacao:", err);
+    return NextResponse.json(
+      { error: "Falha ao salvar.", detalhe: err?.message ?? String(err) },
+      { status: 500 }
+    );
+  }
 }
