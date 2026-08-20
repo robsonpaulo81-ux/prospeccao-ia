@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
         );
 
         // Atualiza o card do lead no Kanban com o que a IA identificou na ligação
-        if (chamada.lead_id) {
+               if (chamada.lead_id) {
           const novaFase = definirFase(analise);
           await query(
             `UPDATE leads
