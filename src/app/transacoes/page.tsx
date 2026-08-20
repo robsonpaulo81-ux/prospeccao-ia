@@ -25,12 +25,12 @@ export default async function FinanceiroPage({
   const modoKanban = searchParams?.view === "kanban";
   const modoMetricas = searchParams?.view === "metricas";
 
-  // NOVO: sla_dias calculado via LEFT JOIN com leads
+  // NOVO: sla_dias calculado via LEFT JOIN com leads (fuso America/Sao_Paulo, evita erro de ±1 dia)
   const baseSelect = `
     SELECT t.*,
            CASE
              WHEN t.lead_id IS NOT NULL AND t.data_transacao IS NOT NULL
-               THEN (t.data_transacao::date - l.criado_em::date)
+               THEN (t.data_transacao::date - (l.criado_em AT TIME ZONE 'America/Sao_Paulo')::date)
              ELSE NULL
            END AS sla_dias
     FROM transacoes t
