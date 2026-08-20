@@ -13,6 +13,8 @@ type Lead = {
   motivo_sem_interesse: string | null;
   documento_url: string | null;
   notas: string | null;
+  criado_em?: string | null;
+  dias_desde_indicacao?: number | null;
 };
 
 const COLUNAS: { fase: string; titulo: string; cor: string; corTexto: string }[] = [
@@ -47,6 +49,13 @@ function documentosDoLead(documentoUrl: string | null): string[] {
   } catch {
     return [documentoUrl];
   }
+}
+
+function corDiasIndicacao(dias: number | null | undefined) {
+  if (dias == null) return "#999";
+  if (dias <= 7) return "#0f9d78";
+  if (dias <= 20) return "#e8973a";
+  return "#c0392b";
 }
 
 function CardLead({
@@ -178,11 +187,29 @@ function CardLead({
         opacity: arrastandoId === lead.id ? 0.5 : 1,
       }}
     >
-      <p style={{ fontSize: 13, fontWeight: 500, color: col.corTexto, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-        {lead.nome ?? "Lead sem nome"}
-        {docs.length > 0 && (
-          <span title={`${docs.length} documento(s) anexado(s)`} style={{ fontSize: 11 }}>
-            📎{docs.length > 1 ? docs.length : ""}
+      <p style={{ fontSize: 13, fontWeight: 500, color: col.corTexto, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {lead.nome ?? "Lead sem nome"}
+          {docs.length > 0 && (
+            <span title={`${docs.length} documento(s) anexado(s)`} style={{ fontSize: 11 }}>
+              📎{docs.length > 1 ? docs.length : ""}
+            </span>
+          )}
+        </span>
+        {lead.dias_desde_indicacao != null && (
+          <span
+            title="Dias desde a indicação"
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: corDiasIndicacao(lead.dias_desde_indicacao),
+              background: `${corDiasIndicacao(lead.dias_desde_indicacao)}22`,
+              padding: "2px 6px",
+              borderRadius: 8,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {lead.dias_desde_indicacao}d
           </span>
         )}
       </p>
