@@ -17,13 +17,10 @@ type Lead = {
   dias_desde_indicacao?: number | null;
 };
 
-const COLUNAS: { fase: string; titulo: string; cor: string; corTexto: string }[] = [
-  { fase: "novo", titulo: "Novo", cor: "#f1efe8", corTexto: "#2c2c2a" },
-  { fase: "atendimento", titulo: "Em atendimento", cor: "#e6f1fb", corTexto: "#0c447c" },
-  { fase: "interessado", titulo: "Interessado", cor: "#e1f5ee", corTexto: "#085041" },
-  { fase: "hot_lead", titulo: "Hot lead", cor: "#faeeda", corTexto: "#633806" },
-  { fase: "restricao", titulo: "Tem restrição", cor: "#fcebeb", corTexto: "#791f1f" },
-  { fase: "sem_interesse", titulo: "Sem interesse", cor: "#f1efe8", corTexto: "#5f5e5a" },
+const COLUNAS = [
+  { fase: "novo", titulo: "Novo", ... },
+  { fase: "atendimento", titulo: "Em atendimento", ... },
+  ...
 ];
 
 const IMOVEL_LABEL: Record<string, string> = {
