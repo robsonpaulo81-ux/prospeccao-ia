@@ -25,10 +25,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Fase inválida" }, { status: 400 });
   }
 
+  const [leadAtual] = await query(`SELECT fase FROM leads WHERE id = $1`, [params.id]);
+  const faseAnterior = leadAtual?.fase ?? null;
+
   await query(
     `UPDATE leads SET fase = $1, fase_atualizada_em = now() WHERE id = $2`,
     [fase, params.id]
   );
+
+  if (faseAnterior !== fase) {
+    await query(
+      `INSERT INTO lead_eventos (lead_id, tipo, fase_anterior, fase_nova)
+       VALUES ($1, 'mudanca_fase', $2, $3)`,
+      [params.id, faseAnterior, fase]
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
