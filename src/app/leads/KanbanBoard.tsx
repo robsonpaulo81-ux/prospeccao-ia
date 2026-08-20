@@ -30,24 +30,13 @@ const COLUNAS = [
   { fase: "sem_interesse", titulo: "Sem interesse", cor: "#f1efe8", corTexto: "#5f5e5a" },
 ];
 
-const FASE_LABEL: Record<string, string> = Object.fromEntries(
-  COLUNAS.map((c) => [c.fase, c.titulo])
-);
+const FASE_LABEL: Record<string, string> = Object.fromEntries(COLUNAS.map((c) => [c.fase, c.titulo]));
 
-const IMOVEL_LABEL: Record<string, string> = {
-  casa: "Casa",
-  apartamento: "Apê",
-};
+const IMOVEL_LABEL: Record<string, string> = { casa: "Casa", apartamento: "Apê" };
 
-const CIDADE_LABEL: Record<string, string> = {
-  aguas_lindas: "Águas Lindas",
-  brasilia: "Brasília",
-};
+const CIDADE_LABEL: Record<string, string> = { aguas_lindas: "Águas Lindas", brasilia: "Brasília" };
 
-const MOTIVO_LABEL: Record<string, string> = {
-  ja_comprou: "Já comprou",
-  interesse_futuro: "Interesse futuro",
-};
+const MOTIVO_LABEL: Record<string, string> = { ja_comprou: "Já comprou", interesse_futuro: "Interesse futuro" };
 
 function documentosDoLead(documentoUrl: string | null): string[] {
   if (!documentoUrl) return [];
@@ -70,36 +59,17 @@ function formatarEvento(ev: any) {
   if (ev.tipo === "mudanca_fase") {
     const de = FASE_LABEL[ev.fase_anterior] || ev.fase_anterior || "—";
     const para = FASE_LABEL[ev.fase_nova] || ev.fase_nova;
-    return `Mudou de "${de}" para "${para}"`;
+    return "Mudou de \"" + de + "\" para \"" + para + "\"";
   }
   if (ev.tipo === "whatsapp") return ev.descricao || "Mensagem no WhatsApp";
   if (ev.tipo === "ligacao") return ev.descricao || "Ligação registrada";
   return ev.descricao || ev.tipo;
 }
 
-function CardLead({
-  lead,
-  col,
-  arrastandoId,
-  setArrastandoId,
-  onAtualizado,
-}: {
-  lead: Lead;
-  col: { fase: string; titulo: string; cor: string; corTexto: string };
-  arrastandoId: string | null;
-  setArrastandoId: (id: string | null) => void;
-  onAtualizado: (lead: Lead) => void;
-}) {
+function CardLead({ lead, col, arrastandoId, setArrastandoId, onAtualizado }: { lead: Lead; col: { fase: string; titulo: string; cor: string; corTexto: string }; arrastandoId: string | null; setArrastandoId: (id: string | null) => void; onAtualizado: (lead: Lead) => void; }) {
   const [editando, setEditando] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [form, setForm] = useState({
-    nome: lead.nome || "",
-    telefone: lead.telefone || "",
-    tipo_imovel: lead.tipo_imovel || "",
-    cidade_interesse: lead.cidade_interesse || "",
-    notas: lead.notas || "",
-  });
-
+  const [form, setForm] = useState({ nome: lead.nome || "", telefone: lead.telefone || "", tipo_imovel: lead.tipo_imovel || "", cidade_interesse: lead.cidade_interesse || "", notas: lead.notas || "" });
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [eventos, setEventos] = useState<any[]>([]);
   const [carregandoEventos, setCarregandoEventos] = useState(false);
@@ -108,7 +78,7 @@ function CardLead({
     if (!mostrarHistorico && eventos.length === 0) {
       setCarregandoEventos(true);
       try {
-        const resp = await fetch(`/api/leads/${lead.id}/eventos`);
+        const resp = await fetch("/api/leads/" + lead.id + "/eventos");
         const dados = await resp.json();
         setEventos(Array.isArray(dados) ? dados : []);
       } catch {
@@ -129,11 +99,7 @@ function CardLead({
   async function salvar() {
     setSalvando(true);
     try {
-      const resp = await fetch(`/api/leads/${lead.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const resp = await fetch("/api/leads/" + lead.id, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       if (!resp.ok) throw new Error("Falha ao salvar.");
       const atualizado = await resp.json();
       onAtualizado({ ...lead, ...atualizado });
@@ -148,7 +114,7 @@ function CardLead({
   async function cancelar() {
     if (!confirm("Tem certeza que deseja cancelar (excluir) este lead?")) return;
     try {
-      const resp = await fetch(`/api/leads/${lead.id}`, { method: "DELETE" });
+      const resp = await fetch("/api/leads/" + lead.id, { method: "DELETE" });
       if (!resp.ok) throw new Error("Falha ao cancelar.");
       onAtualizado({ ...lead, _removido: true } as any);
     } catch {
@@ -157,18 +123,9 @@ function CardLead({
   }
 
   async function virarReserva() {
-    if (!confirm(`Transformar "${lead.nome ?? "este lead"}" em uma reserva no Financeiro?`)) return;
+    if (!confirm("Transformar \"" + (lead.nome ?? "este lead") + "\" em uma reserva no Financeiro?")) return;
     try {
-      const resp = await fetch("/api/transacoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "reserva",
-          cliente: lead.nome || "",
-          leadId: lead.id,
-          dataTransacao: new Date().toISOString().slice(0, 10),
-        }),
-      });
+      const resp = await fetch("/api/transacoes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: "reserva", cliente: lead.nome || "", leadId: lead.id, dataTransacao: new Date().toISOString().slice(0, 10) }) });
       if (!resp.ok) throw new Error("Falha ao criar reserva.");
       alert("Reserva criada! Você pode completar os detalhes na tela Financeiro.");
     } catch {
@@ -176,14 +133,7 @@ function CardLead({
     }
   }
 
-  const estiloInput: React.CSSProperties = {
-    width: "100%",
-    padding: "4px 6px",
-    fontSize: 11,
-    border: "1px solid rgba(0,0,0,0.15)",
-    borderRadius: 4,
-    marginBottom: 4,
-  };
+  const estiloInput: React.CSSProperties = { width: "100%", padding: "4px 6px", fontSize: 11, border: "1px solid rgba(0,0,0,0.15)", borderRadius: 4, marginBottom: 4 };
 
   if (editando) {
     return (
@@ -202,121 +152,60 @@ function CardLead({
         </select>
         <textarea style={{ ...estiloInput, minHeight: 40 }} placeholder="Observações" value={form.notas} onChange={(e) => campo("notas", e.target.value)} />
         <div style={{ display: "flex", gap: 4 }}>
-          <button onClick={salvar} disabled={salvando} style={{ fontSize: 10, padding: "3px 7px", border: "none", borderRadius: 4, background: "#1a1a1a", color: "#fff", cursor: "pointer" }}>
-            {salvando ? "..." : "Salvar"}
-          </button>
-          <button onClick={() => setEditando(false)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "transparent", cursor: "pointer" }}>
-            Cancelar edição
-          </button>
+          <button onClick={salvar} disabled={salvando} style={{ fontSize: 10, padding: "3px 7px", border: "none", borderRadius: 4, background: "#1a1a1a", color: "#fff", cursor: "pointer" }}>{salvando ? "..." : "Salvar"}</button>
+          <button onClick={() => setEditando(false)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "transparent", cursor: "pointer" }}>Cancelar edição</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      draggable
-      onDragStart={() => setArrastandoId(lead.id)}
-      onDragEnd={() => setArrastandoId(null)}
-      style={{
-        background: col.cor,
-        borderRadius: 6,
-        padding: "0.5rem 0.6rem",
-        cursor: "grab",
-        opacity: arrastandoId === lead.id ? 0.5 : 1,
-      }}
-    >
+    <div draggable onDragStart={() => setArrastandoId(lead.id)} onDragEnd={() => setArrastandoId(null)} style={{ background: col.cor, borderRadius: 6, padding: "0.5rem 0.6rem", cursor: "grab", opacity: arrastandoId === lead.id ? 0.5 : 1 }}>
       <p style={{ fontSize: 13, fontWeight: 500, color: col.corTexto, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {lead.nome ?? "Lead sem nome"}
-          {docs.length > 0 && (
-            <span title={`${docs.length} documento(s) anexado(s)`} style={{ fontSize: 11 }}>
-              📎{docs.length > 1 ? docs.length : ""}
-            </span>
-          )}
+          {docs.length > 0 && (<span title={docs.length + " documento(s) anexado(s)"} style={{ fontSize: 11 }}>📎{docs.length > 1 ? docs.length : ""}</span>)}
         </span>
         {lead.dias_desde_indicacao != null && (
-          <span
-            title="Dias desde a indicação"
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: corDiasIndicacao(lead.dias_desde_indicacao),
-              background: `${corDiasIndicacao(lead.dias_desde_indicacao)}22`,
-              padding: "2px 6px",
-              borderRadius: 8,
-              whiteSpace: "nowrap",
-            }}
-          >
+          <span title="Dias desde a indicação" style={{ fontSize: 10, fontWeight: 700, color: corDiasIndicacao(lead.dias_desde_indicacao), background: corDiasIndicacao(lead.dias_desde_indicacao) + "22", padding: "2px 6px", borderRadius: 8, whiteSpace: "nowrap" }}>
             {lead.dias_desde_indicacao}d
           </span>
         )}
       </p>
       <p style={{ fontSize: 11, color: col.corTexto }}>
-        {[
-          lead.tipo_imovel && IMOVEL_LABEL[lead.tipo_imovel],
-          lead.cidade_interesse && CIDADE_LABEL[lead.cidade_interesse],
-          lead.tem_restricao && "Restrição",
-          lead.motivo_sem_interesse && MOTIVO_LABEL[lead.motivo_sem_interesse],
-        ]
-          .filter(Boolean)
-          .join(" · ") || "Sem detalhes ainda"}
+        {[lead.tipo_imovel && IMOVEL_LABEL[lead.tipo_imovel], lead.cidade_interesse && CIDADE_LABEL[lead.cidade_interesse], lead.tem_restricao && "Restrição", lead.motivo_sem_interesse && MOTIVO_LABEL[lead.motivo_sem_interesse]].filter(Boolean).join(" · ") || "Sem detalhes ainda"}
       </p>
 
       {docs.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
-          {docs.map((url, i) => (
-            
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              style={{ fontSize: 10, color: col.corTexto, background: "rgba(255,255,255,0.6)", padding: "2px 6px", borderRadius: 4, textDecoration: "none" }}
-            >
-              Doc {i + 1}
-            </a>
-          ))}
+          {docs.map(function (url, i) {
+            return React.createElement("a", { key: url, href: url, target: "_blank", rel: "noopener noreferrer", onClick: function (e: any) { e.stopPropagation(); }, style: { fontSize: 10, color: col.corTexto, background: "rgba(255,255,255,0.6)", padding: "2px 6px", borderRadius: 4, textDecoration: "none" } }, "Doc " + (i + 1));
+          })}
         </div>
       )}
 
       {lead.notas && (
-        <p style={{ fontSize: 11, color: col.corTexto, marginTop: 6, fontStyle: "italic", opacity: 0.85 }}>
-          “{lead.notas}”
-        </p>
+        <p style={{ fontSize: 11, color: col.corTexto, marginTop: 6, fontStyle: "italic", opacity: 0.85 }}>"{lead.notas}"</p>
       )}
 
       <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" }}>
-        <button onClick={() => setEditando(true)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>
-          Editar
-        </button>
-        <button onClick={virarReserva} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #0f9d78", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#0f9d78", cursor: "pointer" }}>
-          Virar Reserva
-        </button>
-        <button onClick={cancelar} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #c0392b", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#c0392b", cursor: "pointer" }}>
-          Cancelar
-        </button>
-        <button onClick={toggleHistorico} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>
-          {mostrarHistorico ? "Ocultar histórico" : "Histórico"}
-        </button>
+        <button onClick={() => setEditando(true)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>Editar</button>
+        <button onClick={virarReserva} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #0f9d78", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#0f9d78", cursor: "pointer" }}>Virar Reserva</button>
+        <button onClick={cancelar} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #c0392b", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#c0392b", cursor: "pointer" }}>Cancelar</button>
+        <button onClick={toggleHistorico} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>{mostrarHistorico ? "Ocultar histórico" : "Histórico"}</button>
       </div>
 
       {mostrarHistorico && (
         <div style={{ marginTop: 8, borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 6 }}>
           {carregandoEventos && <p style={{ fontSize: 10, color: col.corTexto }}>Carregando...</p>}
-          {!carregandoEventos && eventos.length === 0 && (
-            <p style={{ fontSize: 10, color: col.corTexto, opacity: 0.7 }}>Nenhum evento ainda.</p>
-          )}
-          {!carregandoEventos &&
-            eventos.map((ev) => (
-              <div key={ev.id} style={{ fontSize: 10, color: col.corTexto, marginBottom: 4 }}>
-                <span style={{ opacity: 0.6 }}>
-                  {new Date(ev.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                </span>
-                {" — "}
-                {formatarEvento(ev)}
-              </div>
-            ))}
+          {!carregandoEventos && eventos.length === 0 && (<p style={{ fontSize: 10, color: col.corTexto, opacity: 0.7 }}>Nenhum evento ainda.</p>)}
+          {!carregandoEventos && eventos.map((ev) => (
+            <div key={ev.id} style={{ fontSize: 10, color: col.corTexto, marginBottom: 4 }}>
+              <span style={{ opacity: 0.6 }}>{new Date(ev.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+              {" — "}
+              {formatarEvento(ev)}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -332,17 +221,11 @@ export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }
   async function moverLead(id: string, novaFase: string) {
     const leadAtual = leads.find((l) => l.id === id);
     if (!leadAtual || leadAtual.fase === novaFase) return;
-
     const faseAnterior = leadAtual.fase;
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, fase: novaFase } : l)));
     setErro(null);
-
     try {
-      const res = await fetch(`/api/leads/${id}/fase`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fase: novaFase }),
-      });
+      const res = await fetch("/api/leads/" + id + "/fase", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fase: novaFase }) });
       if (!res.ok) throw new Error("Falha ao salvar");
     } catch {
       setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, fase: faseAnterior } : l)));
@@ -365,48 +248,17 @@ export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }
         {COLUNAS.map((col) => {
           const leadsDaColuna = leads.filter((l) => l.fase === col.fase);
           const emFoco = colunaSobre === col.fase;
-
           return (
-            <div
-              key={col.fase}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setColunaSobre(col.fase);
-              }}
-              onDragLeave={() => setColunaSobre((prev) => (prev === col.fase ? null : prev))}
-              onDrop={(e) => {
-                e.preventDefault();
-                setColunaSobre(null);
-                if (arrastandoId) moverLead(arrastandoId, col.fase);
-              }}
-              style={{
-                minWidth: 240,
-                flex: "0 0 240px",
-                background: emFoco ? "#faf8f2" : "#fff",
-                border: emFoco ? "1px dashed #b4b2a9" : "1px solid #e5e3da",
-                borderRadius: 8,
-                padding: "0.75rem",
-              }}
-            >
+            <div key={col.fase} onDragOver={(e) => { e.preventDefault(); setColunaSobre(col.fase); }} onDragLeave={() => setColunaSobre((prev) => (prev === col.fase ? null : prev))} onDrop={(e) => { e.preventDefault(); setColunaSobre(null); if (arrastandoId) moverLead(arrastandoId, col.fase); }} style={{ minWidth: 240, flex: "0 0 240px", background: emFoco ? "#faf8f2" : "#fff", border: emFoco ? "1px dashed #b4b2a9" : "1px solid #e5e3da", borderRadius: 8, padding: "0.75rem" }}>
               <p style={{ fontSize: 12, color: "#777", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
                 <span>{col.titulo}</span>
                 <span>{leadsDaColuna.length}</span>
               </p>
-
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {leadsDaColuna.map((lead) => (
-                  <CardLead
-                    key={lead.id}
-                    lead={lead}
-                    col={col}
-                    arrastandoId={arrastandoId}
-                    setArrastandoId={setArrastandoId}
-                    onAtualizado={handleAtualizado}
-                  />
+                  <CardLead key={lead.id} lead={lead} col={col} arrastandoId={arrastandoId} setArrastandoId={setArrastandoId} onAtualizado={handleAtualizado} />
                 ))}
-                {leadsDaColuna.length === 0 && (
-                  <p style={{ fontSize: 12, color: "#aaa" }}>Nenhum lead aqui</p>
-                )}
+                {leadsDaColuna.length === 0 && (<p style={{ fontSize: 12, color: "#aaa" }}>Nenhum lead aqui</p>)}
               </div>
             </div>
           );
