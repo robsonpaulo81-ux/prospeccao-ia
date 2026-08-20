@@ -227,3 +227,191 @@ function CardLead({
       }}
     >
       <p style={{ fontSize: 13, fontWeight: 500, color: col.corTexto, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {lead.nome ?? "Lead sem nome"}
+          {docs.length > 0 && (
+            <span title={`${docs.length} documento(s) anexado(s)`} style={{ fontSize: 11 }}>
+              📎{docs.length > 1 ? docs.length : ""}
+            </span>
+          )}
+        </span>
+        {lead.dias_desde_indicacao != null && (
+          <span
+            title="Dias desde a indicação"
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: corDiasIndicacao(lead.dias_desde_indicacao),
+              background: `${corDiasIndicacao(lead.dias_desde_indicacao)}22`,
+              padding: "2px 6px",
+              borderRadius: 8,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {lead.dias_desde_indicacao}d
+          </span>
+        )}
+      </p>
+      <p style={{ fontSize: 11, color: col.corTexto }}>
+        {[
+          lead.tipo_imovel && IMOVEL_LABEL[lead.tipo_imovel],
+          lead.cidade_interesse && CIDADE_LABEL[lead.cidade_interesse],
+          lead.tem_restricao && "Restrição",
+          lead.motivo_sem_interesse && MOTIVO_LABEL[lead.motivo_sem_interesse],
+        ]
+          .filter(Boolean)
+          .join(" · ") || "Sem detalhes ainda"}
+      </p>
+
+      {docs.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+          {docs.map((url, i) => (
+            
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              style={{ fontSize: 10, color: col.corTexto, background: "rgba(255,255,255,0.6)", padding: "2px 6px", borderRadius: 4, textDecoration: "none" }}
+            >
+              Doc {i + 1}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {lead.notas && (
+        <p style={{ fontSize: 11, color: col.corTexto, marginTop: 6, fontStyle: "italic", opacity: 0.85 }}>
+          “{lead.notas}”
+        </p>
+      )}
+
+      <div style={{ display: "flex", gap: 4, marginTop: 6, flexWrap: "wrap" }}>
+        <button onClick={() => setEditando(true)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>
+          Editar
+        </button>
+        <button onClick={virarReserva} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #0f9d78", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#0f9d78", cursor: "pointer" }}>
+          Virar Reserva
+        </button>
+        <button onClick={cancelar} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid #c0392b", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: "#c0392b", cursor: "pointer" }}>
+          Cancelar
+        </button>
+        <button onClick={toggleHistorico} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "rgba(255,255,255,0.5)", color: col.corTexto, cursor: "pointer" }}>
+          {mostrarHistorico ? "Ocultar histórico" : "Histórico"}
+        </button>
+      </div>
+
+      {mostrarHistorico && (
+        <div style={{ marginTop: 8, borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 6 }}>
+          {carregandoEventos && <p style={{ fontSize: 10, color: col.corTexto }}>Carregando...</p>}
+          {!carregandoEventos && eventos.length === 0 && (
+            <p style={{ fontSize: 10, color: col.corTexto, opacity: 0.7 }}>Nenhum evento ainda.</p>
+          )}
+          {!carregandoEventos &&
+            eventos.map((ev) => (
+              <div key={ev.id} style={{ fontSize: 10, color: col.corTexto, marginBottom: 4 }}>
+                <span style={{ opacity: 0.6 }}>
+                  {new Date(ev.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </span>
+                {" — "}
+                {formatarEvento(ev)}
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }) {
+  const [leads, setLeads] = useState<Lead[]>(leadsIniciais);
+  const [arrastandoId, setArrastandoId] = useState<string | null>(null);
+  const [colunaSobre, setColunaSobre] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function moverLead(id: string, novaFase: string) {
+    const leadAtual = leads.find((l) => l.id === id);
+    if (!leadAtual || leadAtual.fase === novaFase) return;
+
+    const faseAnterior = leadAtual.fase;
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, fase: novaFase } : l)));
+    setErro(null);
+
+    try {
+      const res = await fetch(`/api/leads/${id}/fase`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fase: novaFase }),
+      });
+      if (!res.ok) throw new Error("Falha ao salvar");
+    } catch {
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, fase: faseAnterior } : l)));
+      setErro("Não deu pra salvar a mudança. Tenta de novo.");
+    }
+  }
+
+  function handleAtualizado(leadAtualizado: Lead & { _removido?: boolean }) {
+    if (leadAtualizado._removido) {
+      setLeads((prev) => prev.filter((l) => l.id !== leadAtualizado.id));
+    } else {
+      setLeads((prev) => prev.map((l) => (l.id === leadAtualizado.id ? leadAtualizado : l)));
+    }
+  }
+
+  return (
+    <div>
+      {erro && <p style={{ fontSize: 13, color: "#791f1f", marginBottom: 12 }}>{erro}</p>}
+      <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>
+        {COLUNAS.map((col) => {
+          const leadsDaColuna = leads.filter((l) => l.fase === col.fase);
+          const emFoco = colunaSobre === col.fase;
+
+          return (
+            <div
+              key={col.fase}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setColunaSobre(col.fase);
+              }}
+              onDragLeave={() => setColunaSobre((prev) => (prev === col.fase ? null : prev))}
+              onDrop={(e) => {
+                e.preventDefault();
+                setColunaSobre(null);
+                if (arrastandoId) moverLead(arrastandoId, col.fase);
+              }}
+              style={{
+                minWidth: 240,
+                flex: "0 0 240px",
+                background: emFoco ? "#faf8f2" : "#fff",
+                border: emFoco ? "1px dashed #b4b2a9" : "1px solid #e5e3da",
+                borderRadius: 8,
+                padding: "0.75rem",
+              }}
+            >
+              <p style={{ fontSize: 12, color: "#777", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
+                <span>{col.titulo}</span>
+                <span>{leadsDaColuna.length}</span>
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {leadsDaColuna.map((lead) => (
+                  <CardLead
+                    key={lead.id}
+                    lead={lead}
+                    col={col}
+                    arrastandoId={arrastandoId}
+                    setArrastandoId={setArrastandoId}
+                    onAtualizado={handleAtualizado}
+                  />
+                ))}
+                {leadsDaColuna.length === 0 && (
+                  <p style={{ fontSize: 12, color: "#aaa" }}>Nenhum lead aqui</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
