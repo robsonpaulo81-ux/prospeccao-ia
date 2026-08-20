@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
         );
 
         // Atualiza o card do lead no Kanban com o que a IA identificou na ligação
-               if (chamada.lead_id) {
+                       if (chamada.lead_id) {
           const novaFase = definirFase(analise);
           await query(
             `UPDATE leads
@@ -171,6 +171,12 @@ export async function POST(req: NextRequest) {
               analise.tem_restricao,
               analise.motivo_sem_interesse,
             ]
+          );
+
+          await query(
+            `INSERT INTO lead_eventos (lead_id, tipo, descricao)
+             VALUES ($1, 'ligacao', $2)`,
+            [chamada.lead_id, analise.resumo || "Ligação via IA (Retell) sem resumo gerado."]
           );
         }
       }
