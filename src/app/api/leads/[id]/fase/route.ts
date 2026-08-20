@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-const FASES_VALIDAS = ["novo", "atendimento", "sem_interesse", "restricao", "interessado", "hot_lead"];
+const FASES_VALIDAS = [
+  "novo",
+  "atendimento",
+  "interessado",
+  "hot_lead",
+  "pend_documentacao",
+  "aprovado",
+  "condicionado",
+  "reprovado",
+  "restricao",
+  "sem_interesse",
+];
 
 export async function PATCH(
   req: NextRequest,
