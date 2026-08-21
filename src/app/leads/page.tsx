@@ -21,7 +21,7 @@ export default async function LeadsPage() {
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1rem" }}>Leads</h1>
       <ExportButtons csvUrl="/api/export/leads" />
       <NovoLeadForm />
-      <KanbanBoard leadsIniciais={leads} />
+            <LeadsView leadsIniciais={leads} />
     </div>
   );
 }
