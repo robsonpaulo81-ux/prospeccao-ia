@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { enviarWhatsApp } from "@/lib/twilio";
-import { FASE_LABEL } from "@/app/leads/KanbanBoard";
+import { FASE_LABEL } from "@/lib/labels";
 
 const FASES_VALIDAS = [
   "novo",
