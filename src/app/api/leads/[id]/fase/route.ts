@@ -6,11 +6,13 @@ const FASES_VALIDAS = [
   "atendimento",
   "interessado",
   "hot_lead",
+  "analise_cca",
   "pend_documentacao",
   "aprovado",
   "condicionado",
   "reprovado",
   "restricao",
+  "interesse_futuro",
   "sem_interesse",
 ];
 
