@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { query } from "@/lib/db";
-import KanbanBoard from "./KanbanBoard";
+import LeadsView from "./LeadsView";
 import ExportButtons from "../components/ExportButtons";
 import AutoAtualizar from "../components/AutoAtualizar";
 import NovoLeadForm from "./NovoLeadForm";
