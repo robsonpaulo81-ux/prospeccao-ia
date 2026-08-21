@@ -25,12 +25,6 @@ export const IMOVEL_LABEL: Record<string, string> = { casa: "Casa", apartamento:
 
 export const CIDADE_LABEL: Record<string, string> = { aguas_lindas: "Águas Lindas", brasilia: "Brasília" };
 
-export const FASE_LABEL: Record<string, string> = Object.fromEntries(COLUNAS.map((c) => [c.fase, c.titulo]));
-
-export const IMOVEL_LABEL: Record<string, string> = { casa: "Casa", apartamento: "Apê" };
-
-export const CIDADE_LABEL: Record<string, string> = { aguas_lindas: "Águas Lindas", brasilia: "Brasília" };
-
 const MOTIVO_LABEL: Record<string, string> = { ja_comprou: "Já comprou", interesse_futuro: "Interesse futuro" };
 
 function documentosDoLead(documentoUrl: string | null): string[] {
