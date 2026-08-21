@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { COLUNAS, FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "@/lib/labels";
 
 type Lead = {
   id: string;
@@ -16,14 +17,6 @@ type Lead = {
   criado_em?: string | null;
   dias_desde_indicacao?: number | null;
 };
-
-import { COLUNAS, FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "@/lib/labels";
-
-export const FASE_LABEL: Record<string, string> = Object.fromEntries(COLUNAS.map((c) => [c.fase, c.titulo]));
-
-export const IMOVEL_LABEL: Record<string, string> = { casa: "Casa", apartamento: "Apê" };
-
-export const CIDADE_LABEL: Record<string, string> = { aguas_lindas: "Águas Lindas", brasilia: "Brasília" };
 
 const MOTIVO_LABEL: Record<string, string> = { ja_comprou: "Já comprou", interesse_futuro: "Interesse futuro" };
 
