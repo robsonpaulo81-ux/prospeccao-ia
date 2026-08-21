@@ -1,6 +1,6 @@
 "use client";
 
-import { FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "./KanbanBoard";
+import { FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "@/lib/labels";
 
 type Lead = {
   id: string;
