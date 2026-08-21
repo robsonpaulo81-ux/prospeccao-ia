@@ -17,7 +17,7 @@ type Lead = {
   dias_desde_indicacao?: number | null;
 };
 
-const COLUNAS = [
+export const COLUNAS = [
   { fase: "novo", titulo: "Novo", cor: "#f1efe8", corTexto: "#2c2c2a" },
   { fase: "atendimento", titulo: "Em atendimento", cor: "#e6f1fb", corTexto: "#0c447c" },
   { fase: "interessado", titulo: "Interessado", cor: "#e1f5ee", corTexto: "#085041" },
@@ -32,11 +32,11 @@ const COLUNAS = [
   { fase: "sem_interesse", titulo: "Sem interesse", cor: "#f1efe8", corTexto: "#5f5e5a" },
 ];
 
-const FASE_LABEL: Record<string, string> = Object.fromEntries(COLUNAS.map((c) => [c.fase, c.titulo]));
+export const FASE_LABEL: Record<string, string> = Object.fromEntries(COLUNAS.map((c) => [c.fase, c.titulo]));
 
-const IMOVEL_LABEL: Record<string, string> = { casa: "Casa", apartamento: "Apê" };
+export const IMOVEL_LABEL: Record<string, string> = { casa: "Casa", apartamento: "Apê" };
 
-const CIDADE_LABEL: Record<string, string> = { aguas_lindas: "Águas Lindas", brasilia: "Brasília" };
+export const CIDADE_LABEL: Record<string, string> = { aguas_lindas: "Águas Lindas", brasilia: "Brasília" };
 
 const MOTIVO_LABEL: Record<string, string> = { ja_comprou: "Já comprou", interesse_futuro: "Interesse futuro" };
 
