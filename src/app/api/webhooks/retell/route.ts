@@ -58,17 +58,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "call_id ausente no payload" }, { status: 400 });
   }
 
-  if (evento === "call_started") {
-    const direction = call.direction ?? (call.to_number ? "outbound" : "inbound");
-    const numeroLead =
-      direction === "outbound" ? call.to_number : call.from_number;
-    const telefoneNormalizado = normalizarTelefone(numeroLead);
-
-    let leadId: string | null = null;
+      let leadId: string | null = null;
     if (telefoneNormalizado) {
+      const ultimos11 = telefoneNormalizado.slice(-11);
       const [lead] = await query(
-        `SELECT id FROM leads WHERE regexp_replace(telefone, '\\D', '', 'g') = $1 LIMIT 1`,
-        [telefoneNormalizado]
+        `SELECT id FROM leads
+         WHERE right(regexp_replace(telefone, '\\D', '', 'g'), 11) = $1
+         LIMIT 1`,
+        [ultimos11]
       );
       leadId = lead?.id ?? null;
     }
