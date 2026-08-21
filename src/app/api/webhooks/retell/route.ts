@@ -58,7 +58,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "call_id ausente no payload" }, { status: 400 });
   }
 
-      let leadId: string | null = null;
+  if (evento === "call_started") {
+    const direction = call.direction ?? (call.to_number ? "outbound" : "inbound");
+    const numeroLead =
+      direction === "outbound" ? call.to_number : call.from_number;
+    const telefoneNormalizado = normalizarTelefone(numeroLead);
+
+    let leadId: string | null = null;
     if (telefoneNormalizado) {
       const ultimos11 = telefoneNormalizado.slice(-11);
       const [lead] = await query(
@@ -149,7 +155,7 @@ export async function POST(req: NextRequest) {
         );
 
         // Atualiza o card do lead no Kanban com o que a IA identificou na ligação
-                       if (chamada.lead_id) {
+        if (chamada.lead_id) {
           const novaFase = definirFase(analise);
           await query(
             `UPDATE leads
