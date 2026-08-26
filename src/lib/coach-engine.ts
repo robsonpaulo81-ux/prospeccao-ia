@@ -1,10 +1,13 @@
-
 // src/lib/coach-engine.ts
 //
 // Motor de coaching v2 — recebe o transcript acumulado de uma chamada e devolve
 // sugestões acionáveis para o agente, via LLM.
 //
 // Requer a env var ANTHROPIC_API_KEY configurada na Vercel.
+//
+// v2.1: aceita opcionalmente um print da tela do agente (base64 JPEG) no
+// momento da análise — usado pelo capturador Electron (VIGIA) para dar
+// mais contexto ao motor (ex: o que está aberto no CRM, perfil do lead na tela).
 
 export type TurnoTranscricao = {
   speaker: "agente" | "lead";
@@ -32,6 +35,8 @@ CONTEXTO DA LIGAÇÃO: {call_context}
 
 PERGUNTA REPETIDA DETECTADA: {repeated_question}
 
+{screenshot_note}
+
 REGRAS:
 1. Responda SOMENTE em JSON válido, sem texto antes ou depois, sem markdown.
 2. Gere no máximo 2 sugestões por vez — priorize a mais urgente.
@@ -49,7 +54,9 @@ REGRAS:
    isso?" ou reage com estranhamento a uma palavra/gíria), gere tipo "clareza_comunicacao"
    sugerindo reformular em linguagem simples.
 8. Nunca invente informação sobre o lead que não esteja no transcript.
-9. Tom da sugestão: direto, como uma anotação de colega experiente, não como script decorado.
+9. Se houver um print de tela anexado, use-o apenas como contexto de apoio (ex: dados do
+   lead visíveis no CRM) — nunca deixe de seguir as regras acima por causa dele.
+10. Tom da sugestão: direto, como uma anotação de colega experiente, não como script decorado.
 
 TRANSCRIPT ATÉ AGORA:
 {transcript_so_far}
@@ -100,8 +107,14 @@ function valeAPenaAnalisar(ultimaFalaLead: string): boolean {
 export async function gerarSugestoesCoach(params: {
   callContext: string;
   transcript: TurnoTranscricao[];
+  /**
+   * Print da tela do agente no momento da análise, em base64 (só os bytes,
+   * sem o prefixo "data:image/jpeg;base64,"). Opcional — quando ausente,
+   * o motor se comporta exatamente como antes (só texto).
+   */
+  screenshotBase64?: string;
 }): Promise<Sugestao[]> {
-  const { callContext, transcript } = params;
+  const { callContext, transcript, screenshotBase64 } = params;
 
   const ultimaFalaLead = [...transcript].reverse().find((t) => t.speaker === "lead");
   if (!ultimaFalaLead || !valeAPenaAnalisar(ultimaFalaLead.text)) {
@@ -114,9 +127,27 @@ export async function gerarSugestoesCoach(params: {
     .map((t) => `${t.speaker}: ${t.text}`)
     .join("\n");
 
+  const screenshotNote = screenshotBase64
+    ? "Um print da tela do agente no momento atual está anexado a esta mensagem."
+    : "Nenhum print de tela foi anexado desta vez.";
+
   const systemPrompt = SYSTEM_PROMPT_TEMPLATE.replace("{call_context}", callContext)
     .replace("{repeated_question}", String(perguntaRepetida))
+    .replace("{screenshot_note}", screenshotNote)
     .replace("{transcript_so_far}", textoTranscript);
+
+  // Monta o conteúdo da mensagem: texto sempre, imagem só se houver print.
+  const userContent: any[] = [];
+  if (screenshotBase64) {
+    userContent.push({
+      type: "image",
+      source: { type: "base64", media_type: "image/jpeg", data: screenshotBase64 },
+    });
+  }
+  userContent.push({
+    type: "text",
+    text: "Gere as sugestões agora, no formato JSON definido.",
+  });
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -132,7 +163,7 @@ export async function gerarSugestoesCoach(params: {
       messages: [
         {
           role: "user",
-          content: "Gere as sugestões agora, no formato JSON definido.",
+          content: userContent,
         },
       ],
     }),
