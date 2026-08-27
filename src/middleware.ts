@@ -6,7 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 // - /api/indicacao (recebe as indicações)
 // - /api/upload (recebe os documentos anexados)
 // - /api/webhooks (recebe eventos do Retell, sem login)
-const CAMINHOS_PUBLICOS = ["/login", "/api/login", "/indicar", "/api/indicacao", "/api/upload", "/api/webhooks"];
+// - /api/coach (recebe transcript/print do app Live Coach, sem login)
+const CAMINHOS_PUBLICOS = ["/login", "/api/login", "/indicar", "/api/indicacao", "/api/upload", "/api/webhooks", "/api/coach"];
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const ehPublico = CAMINHOS_PUBLICOS.some(
