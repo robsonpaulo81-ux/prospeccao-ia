@@ -5,15 +5,19 @@
   --text-muted: #777777;
   --card-bg: #ffffff;
   --border: #e5e3da;
+  --accent: #0c447c;
+  --accent-2: #b8860b;
 }
 
 :root[data-theme="dark"] {
-  --bg: #16171b;
-  --bg-nav: #1e1f24;
-  --text: #eaeaec;
-  --text-muted: #9a9aa2;
-  --card-bg: #24252b;
-  --border: #33343b;
+  --bg: #0a1628;
+  --bg-nav: #0f1f38;
+  --text: #7fd4e8;
+  --text-muted: #5a8ca8;
+  --card-bg: #132844;
+  --border: #d4a531;
+  --accent: #7fd4e8;
+  --accent-2: #e8b923;
 }
 
 * {
