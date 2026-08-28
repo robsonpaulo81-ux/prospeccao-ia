@@ -135,3 +135,43 @@ export default async function VisaoGeralPage() {
         <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 20, color: "var(--accent-2)" }}>Financeiro por fase</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          {dadosFinanceiro.map((d) => (
+            <div key={d.tipo}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{d.titulo}</span>
+                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{d.quantidade} registro(s)</span>
+              </div>
+
+              <div style={{ background: "var(--bg)", borderRadius: 6, height: 10, marginBottom: 6, overflow: "hidden" }}>
+                <div
+                  style={{
+                    width: `${(d.quantidade / maiorQuantidade) * 100}%`,
+                    background: d.cor,
+                    height: "100%",
+                    borderRadius: 6,
+                  }}
+                />
+              </div>
+
+              <div style={{ background: "var(--bg)", borderRadius: 6, height: 10, marginBottom: 6, overflow: "hidden" }}>
+                <div
+                  style={{
+                    width: `${(d.valor / maiorValor) * 100}%`,
+                    background: d.cor,
+                    opacity: 0.55,
+                    height: "100%",
+                    borderRadius: 6,
+                  }}
+                />
+              </div>
+
+              <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>{formatarMoeda(d.valor)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <FunilVendas dadosFase={dadosFase} totalLeads={totalLeads.total} />
+    </div>
+  );
+}
