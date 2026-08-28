@@ -188,3 +188,22 @@ export async function gerarSugestoesCoach(params: {
     return [];
   }
 }
+async function buscarBaseConhecimento(transcriptRecente: string): Promise<string> {
+  const resultado = await query(`
+    SELECT categoria, conteudo, contexto
+    FROM base_conhecimento
+    WHERE ativo = true
+    AND EXISTS (
+      SELECT 1 FROM unnest(string_to_array(gatilho, ',')) AS palavra
+      WHERE $1 ILIKE '%' || trim(palavra) || '%'
+    )
+  `, [transcriptRecente]);
+
+  if (resultado.rows.length === 0) return '';
+
+  const entradas = resultado.rows
+    .map((r: any) => `- [${r.categoria}] ${r.conteudo}`)
+    .join('\n');
+
+  return `\n\nBase de conhecimento relevante (priorize isso ao gerar a sugestão):\n${entradas}`;
+}
