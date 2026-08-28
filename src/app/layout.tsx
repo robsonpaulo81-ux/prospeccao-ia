@@ -33,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/leads" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Leads</a>
             <a href="/indicadores" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Indicadores</a>
             <a href="/transacoes" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Financeiro</a>
+            <a href="/atendimento-ao-vivo" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Atendimento ao vivo</a>
             <ThemeToggle />
           </nav>
           <main style={{ padding: "1.5rem" }}>{children}</main>
