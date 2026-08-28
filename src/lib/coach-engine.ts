@@ -198,12 +198,11 @@ async function buscarBaseConhecimento(transcriptRecente: string): Promise<string
       WHERE $1 ILIKE '%' || trim(palavra) || '%'
     )
   `, [transcriptRecente]);
+  if (resultado.length === 0) return '';
 
-  if (resultado.rows.length === 0) return '';
-
-  const entradas = resultado.rows
+  const entradas = resultado
     .map((r: any) => `- [${r.categoria}] ${r.conteudo}`)
     .join('\n');
-
+ 
   return `\n\nBase de conhecimento relevante (priorize isso ao gerar a sugestão):\n${entradas}`;
 }
