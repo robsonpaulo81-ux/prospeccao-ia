@@ -68,3 +68,15 @@ export default function FunilVendas({ dadosFase, totalLeads }: { dadosFase: Dado
           background: "#1a1a1a",
           borderRadius: 8,
           color: "#fff",
+        }}
+      >
+        <span style={{ fontSize: 12 }}>
+          TOTAL DE LEADS: <strong style={{ fontSize: 15 }}>{totalLeads}</strong>
+        </span>
+        <span style={{ fontSize: 12 }}>
+          CONVERSÃO (Aprovado): <strong style={{ fontSize: 15 }}>{conversaoGeral.toFixed(2)}%</strong>
+        </span>
+      </div>
+    </div>
+  );
+}
