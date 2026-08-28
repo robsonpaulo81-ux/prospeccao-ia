@@ -1,3 +1,4 @@
+import FunilVendas from "./components/FunilVendas";
 export const dynamic = "force-dynamic";
 
 import { query } from "@/lib/db";
@@ -172,7 +173,9 @@ export default async function VisaoGeralPage() {
             </div>
           ))}
         </div>
-      </div>
+            </div>
+
+      <FunilVendas dadosFase={dadosFase} totalLeads={totalLeads.total} />
     </div>
   );
 }
