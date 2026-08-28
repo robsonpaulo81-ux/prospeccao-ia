@@ -9,7 +9,13 @@ const CORES_FASE: Record<string, { titulo: string; cor: string }> = {
   atendimento: { titulo: "Em atend.", cor: "#3b82c4" },
   interessado: { titulo: "Interessado", cor: "#0f9d78" },
   hot_lead: { titulo: "Hot lead", cor: "#e8973a" },
-  restricao: { titulo: "Restrição", cor: "#c0392b" },
+  analise_cca: { titulo: "Análise CCA", cor: "#4527a0" },
+  pend_documentacao: { titulo: "Pend. Documentação", cor: "#303f9f" },
+  aprovado: { titulo: "Aprovado", cor: "#1b5e20" },
+  condicionado: { titulo: "Condicionado", cor: "#7a4a00" },
+  reprovado: { titulo: "Reprovado", cor: "#212121" },
+  restricao: { titulo: "Tem restrição", cor: "#c0392b" },
+  interesse_futuro: { titulo: "Interesse Futuro", cor: "#8a5a00" },
   sem_interesse: { titulo: "Sem interesse", cor: "#999" },
 };
 
