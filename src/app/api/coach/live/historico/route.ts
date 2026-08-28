@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 // Lista as sessões passadas do Live Coach (navegador ou app Electron),
 // mais recentes primeiro, pra tela de histórico.
 export async function GET() {
