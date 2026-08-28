@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 // Detalhe de uma sessão específica do Live Coach: transcrição completa e horários.
 export async function GET(
   req: NextRequest,
