@@ -34,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/indicadores" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Indicadores</a>
             <a href="/transacoes" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Financeiro</a>
             <a href="/atendimento-ao-vivo" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Atendimento ao vivo</a>
+            <a href="/base-conhecimento" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Base de Conhecimento</a>
             <ThemeToggle />
           </nav>
           <main style={{ padding: "1.5rem" }}>{children}</main>
