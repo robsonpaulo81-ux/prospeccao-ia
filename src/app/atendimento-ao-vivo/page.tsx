@@ -59,10 +59,12 @@ export default function AtendimentoAoVivoPage() {
     setDgKey(localStorage.getItem("dgKey") || "");
   }, []);
 
-  // Enquanto NÃO estivermos capturando por aqui, continua checando se há
-  // uma sessão em andamento vinda de outra fonte (ex: app Electron).
+  // Só fica de olho em sessões de OUTRA fonte (ex: app Electron) enquanto
+  // esta aba nunca tiver iniciado uma captura própria. Assim que você inicia
+  // uma vez aqui, a página passa a mostrar sempre essa sessão — mesmo depois
+  // de clicar "Parar captura" — em vez de trocar pra outra coisa.
   useEffect(() => {
-    if (capturando) return;
+    if (callId) return; // já temos uma sessão nossa, não precisa buscar outra
     let cancelado = false;
     async function buscar() {
       try {
@@ -77,7 +79,7 @@ export default function AtendimentoAoVivoPage() {
       cancelado = true;
       clearInterval(intervalo);
     };
-  }, [capturando]);
+  }, [callId]);
 
   function addTranscriptLine(speaker: "agente" | "lead", text: string) {
     transcriptRef.current = [...transcriptRef.current, { speaker, text }];
@@ -292,7 +294,7 @@ export default function AtendimentoAoVivoPage() {
         <p style={{ fontSize: 12, textAlign: "center", opacity: 0.7 }}>{status}</p>
       </div>
 
-      {capturando && (
+      {(capturando || transcript.length > 0) && (
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Transcrição ao vivo</p>
           <div
@@ -315,9 +317,9 @@ export default function AtendimentoAoVivoPage() {
         </div>
       )}
 
-      {capturando && callId && <LiveCoachPanel callId={callId} ativo={true} />}
+      {callId && <LiveCoachPanel callId={callId} ativo={capturando} />}
 
-      {!capturando && callIdRemoto && (
+      {!callId && callIdRemoto && (
         <>
           <p style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
             Mostrando sessão detectada de outra fonte (ex: app no PC):
@@ -326,7 +328,7 @@ export default function AtendimentoAoVivoPage() {
         </>
       )}
 
-      {!capturando && !callIdRemoto && (
+      {!callId && !callIdRemoto && (
         <p style={{ fontSize: 13, opacity: 0.7 }}>Nenhum atendimento ao vivo em andamento no momento.</p>
       )}
     </div>
