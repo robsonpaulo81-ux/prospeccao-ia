@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 // Retorna o callId da sessão de atendimento ao vivo (Live Coach) mais recente,
 // pra a tela /atendimento-ao-vivo saber qual painel de sugestões mostrar.
 export async function GET() {
