@@ -233,6 +233,15 @@ export default function AtendimentoAoVivoPage() {
     desktopStreamRef.current = null;
     micStreamRef.current = null;
 
+    // Salva a transcrição completa pra poder ser revista depois no histórico.
+    if (callId && transcriptRef.current.length > 0) {
+      fetch("/api/coach/live/finalizar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callId, transcript: transcriptRef.current }),
+      }).catch(() => {});
+    }
+
     setStatus("parado");
   }
 
@@ -244,9 +253,12 @@ export default function AtendimentoAoVivoPage() {
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", padding: "24px 16px" }}>
       <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Atendimento ao vivo</h1>
-      <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 20 }}>
+      <p style={{ fontSize: 13, opacity: 0.7, marginBottom: 8 }}>
         Compartilhe sua tela e microfone direto daqui — sem precisar abrir nenhum app no PC.
       </p>
+      <a href="/atendimento-ao-vivo/historico" style={{ fontSize: 12, display: "inline-block", marginBottom: 16 }}>
+        Ver histórico de atendimentos →
+      </a>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
         <label style={{ fontSize: 12, fontWeight: 600 }}>
