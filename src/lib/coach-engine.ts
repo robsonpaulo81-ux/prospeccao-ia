@@ -1,3 +1,4 @@
+import { query } from '@/lib/db';
 // src/lib/coach-engine.ts
 //
 // Motor de coaching v2 — recebe o transcript acumulado de uma chamada e devolve
