@@ -150,7 +150,7 @@ function CardLead({ lead, col, arrastandoId, setArrastandoId, onAtualizado }: { 
     }
   }
 
-  const estiloInput: React.CSSProperties = { width: "100%", padding: "4px 6px", fontSize: 11, border: "1px solid rgba(0,0,0,0.15)", borderRadius: 4, marginBottom: 4 };
+  const estiloInput: React.CSSProperties = { width: "100%", padding: "4px 6px", fontSize: 11, border: "1px solid var(--border)", borderRadius: 4, marginBottom: 4, background: "var(--card-bg)", color: "var(--text)" };
 
   if (editando) {
     return (
@@ -169,8 +169,8 @@ function CardLead({ lead, col, arrastandoId, setArrastandoId, onAtualizado }: { 
         </select>
         <textarea style={{ ...estiloInput, minHeight: 40 }} placeholder="Observações" value={form.notas} onChange={(e) => campo("notas", e.target.value)} />
         <div style={{ display: "flex", gap: 4 }}>
-          <button onClick={salvar} disabled={salvando} style={{ fontSize: 10, padding: "3px 7px", border: "none", borderRadius: 4, background: "#1a1a1a", color: "#fff", cursor: "pointer" }}>{salvando ? "..." : "Salvar"}</button>
-          <button onClick={() => setEditando(false)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid rgba(0,0,0,0.2)", borderRadius: 4, background: "transparent", cursor: "pointer" }}>Cancelar edição</button>
+          <button onClick={salvar} disabled={salvando} style={{ fontSize: 10, padding: "3px 7px", border: "none", borderRadius: 4, background: "var(--accent-2)", color: "#1a1a1a", cursor: "pointer" }}>{salvando ? "..." : "Salvar"}</button>
+          <button onClick={() => setEditando(false)} style={{ fontSize: 10, padding: "3px 7px", border: "1px solid var(--border)", borderRadius: 4, background: "transparent", color: "var(--text)", cursor: "pointer" }}>Cancelar edição</button>
         </div>
       </div>
     );
@@ -286,8 +286,8 @@ export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }
           const leadsDaColuna = leads.filter((l) => l.fase === col.fase);
           const emFoco = colunaSobre === col.fase;
           return (
-            <div key={col.fase} onDragOver={(e) => { e.preventDefault(); setColunaSobre(col.fase); }} onDragLeave={() => setColunaSobre((prev) => (prev === col.fase ? null : prev))} onDrop={(e) => { e.preventDefault(); setColunaSobre(null); if (arrastandoId) moverLead(arrastandoId, col.fase); }} style={{ minWidth: 240, flex: "0 0 240px", background: emFoco ? "#faf8f2" : "#fff", border: emFoco ? "1px dashed #b4b2a9" : "1px solid #e5e3da", borderRadius: 8, padding: "0.75rem" }}>
-              <p style={{ fontSize: 12, color: "#777", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
+            <div key={col.fase} onDragOver={(e) => { e.preventDefault(); setColunaSobre(col.fase); }} onDragLeave={() => setColunaSobre((prev) => (prev === col.fase ? null : prev))} onDrop={(e) => { e.preventDefault(); setColunaSobre(null); if (arrastandoId) moverLead(arrastandoId, col.fase); }} style={{ minWidth: 240, flex: "0 0 240px", background: emFoco ? "var(--bg)" : "var(--card-bg)", border: emFoco ? "1px dashed var(--accent-2)" : "1px solid var(--border)", borderRadius: 8, padding: "0.75rem" }}>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
                 <span>{col.titulo}</span>
                 <span>{leadsDaColuna.length}</span>
               </p>
@@ -295,7 +295,7 @@ export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }
                 {leadsDaColuna.map((lead) => (
                   <CardLead key={lead.id} lead={lead} col={col} arrastandoId={arrastandoId} setArrastandoId={setArrastandoId} onAtualizado={handleAtualizado} />
                 ))}
-                {leadsDaColuna.length === 0 && (<p style={{ fontSize: 12, color: "#aaa" }}>Nenhum lead aqui</p>)}
+                {leadsDaColuna.length === 0 && (<p style={{ fontSize: 12, color: "var(--text-muted)" }}>Nenhum lead aqui</p>)}
               </div>
             </div>
           );
