@@ -26,10 +26,10 @@ export default function FunilVendas({ dadosFase, totalLeads }: { dadosFase: Dado
   const conversaoGeral = totalLeads > 0 ? (aprovados / totalLeads) * 100 : 0;
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: "1.25rem", border: "1px solid #e5e3da", marginTop: 16 }}>
-      <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 16, color: "#333" }}>Funil de vendas</p>
+    <div style={{ background: "var(--card-bg)", borderRadius: 12, padding: "1.25rem", border: "1px solid var(--border)", marginTop: 16 }}>
+      <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 16, color: "var(--accent-2)" }}>Funil de vendas</p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", fontSize: 11, color: "#999", fontWeight: 600, padding: "0 4px", marginBottom: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", fontSize: 11, color: "var(--text-muted)", fontWeight: 600, padding: "0 4px", marginBottom: 8 }}>
         <span>ETAPA</span>
         <span style={{ textAlign: "center" }}>QTD.</span>
         <span style={{ textAlign: "right" }}>% DO TOTAL</span>
@@ -65,9 +65,9 @@ export default function FunilVendas({ dadosFase, totalLeads }: { dadosFase: Dado
           justifyContent: "space-between",
           marginTop: 16,
           padding: "10px 12px",
-          background: "#1a1a1a",
+          background: "var(--accent-2)",
           borderRadius: 8,
-          color: "#fff",
+          color: "#1a1a1a",
         }}
       >
         <span style={{ fontSize: 12 }}>
