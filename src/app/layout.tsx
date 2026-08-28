@@ -10,9 +10,8 @@ export const metadata = {
 const scriptInicialTema = `
 (function() {
   try {
-    var tema = localStorage.getItem('tema') || 'automatico';
-    var aplicado = tema === 'claro' ? 'light' : tema === 'escuro' ? 'dark' :
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+   var tema = localStorage.getItem('tema') || 'escuro';
+var aplicado = tema === 'claro' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', aplicado);
   } catch (e) {}
 })();
@@ -20,7 +19,7 @@ const scriptInicialTema = `
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="light">
+    <html lang="pt-BR" data-theme="dark">
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptInicialTema }} />
       </head>
