@@ -70,7 +70,7 @@ export default async function FinanceiroPage({
       <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1rem", color: "var(--accent-2)" }}>Financeiro</h1>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        
+        <a
           href={`/transacoes?view=lista&tipo=${tipoAtivo}`}
           style={{
             fontSize: 13,
@@ -84,7 +84,7 @@ export default async function FinanceiroPage({
         >
           Lista
         </a>
-        
+        <a
           href="/transacoes?view=metricas"
           style={{
             fontSize: 13,
@@ -98,7 +98,7 @@ export default async function FinanceiroPage({
         >
           Métricas
         </a>
-        
+        <a
           href="/transacoes?view=kanban"
           style={{
             fontSize: 13,
@@ -141,7 +141,7 @@ export default async function FinanceiroPage({
         <>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {ABAS.map((aba) => (
-          
+          <a
             key={aba.tipo}
             href={`/transacoes?tipo=${aba.tipo}`}
             style={{
