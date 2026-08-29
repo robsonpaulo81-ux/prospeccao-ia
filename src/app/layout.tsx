@@ -10,8 +10,9 @@ export const metadata = {
 const scriptInicialTema = `
 (function() {
   try {
-    var tema = localStorage.getItem('tema') || 'escuro';
-    var aplicado = tema === 'claro' ? 'light' : 'dark';
+    var tema = localStorage.getItem('tema') || 'automatico';
+    var aplicado = tema === 'claro' ? 'light' : tema === 'escuro' ? 'dark' :
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', aplicado);
   } catch (e) {}
 })();
@@ -19,21 +20,20 @@ const scriptInicialTema = `
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="dark">
+    <html lang="pt-BR" data-theme="light">
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptInicialTema }} />
       </head>
       <body>
         <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", minHeight: "100vh" }}>
           <nav style={{ background: "var(--bg-nav)", borderRight: "1px solid var(--border)", padding: "1rem" }}>
-            <p style={{ fontWeight: 600, marginBottom: "1.5rem", color: "var(--accent-2)" }}>Prospecção IA</p>
-            <a href="/" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>📊 Visão geral</a>
-            <a href="/campanhas" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>📣 Campanhas</a>
-            <a href="/leads" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>🧑‍🤝‍🧑 Leads</a>
-            <a href="/indicadores" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>🏅 Indicadores</a>
-            <a href="/transacoes" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>💰 Financeiro</a>
-            <a href="/atendimento-ao-vivo" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>🎧 Atendimento ao vivo</a>
-            <a href="/base-conhecimento" style={{ display: "block", padding: "8px 0", textDecoration: "none", color: "var(--text)" }}>📚 Base de Conhecimento</a>
+            <p style={{ fontWeight: 600, marginBottom: "1.5rem" }}>Prospecção IA</p>
+            <a href="/" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Visão geral</a>
+            <a href="/campanhas" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Campanhas</a>
+            <a href="/leads" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Leads</a>
+            <a href="/indicadores" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Indicadores</a>
+            <a href="/transacoes" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Financeiro</a>
+            <a href="https://robsonpaulo81-ux.github.io/habitacao-para-todos/" target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Planta & Chave</a>
             <ThemeToggle />
           </nav>
           <main style={{ padding: "1.5rem" }}>{children}</main>
