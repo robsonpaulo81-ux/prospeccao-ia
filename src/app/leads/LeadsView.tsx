@@ -37,4 +37,10 @@ export default function LeadsView({ leadsIniciais }: { leadsIniciais: any[] }) {
         </button>
       </div>
       {modo === "kanban" ? (
-        <KanbanBoard
+        <KanbanBoard leadsIniciais={leadsIniciais} />
+      ) : (
+        <ListaLeads leads={leadsIniciais} />
+      )}
+    </div>
+  );
+}
