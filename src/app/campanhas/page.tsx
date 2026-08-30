@@ -1,3 +1,4 @@
+import React from "react";
 import { query } from "@/lib/db";
 
 const LABEL_ATENDIMENTO: Record<string, string> = {
@@ -82,32 +83,47 @@ export default async function CampanhasPage() {
       <div style={{ background: "#fff", border: "1px solid #e5e3da", borderRadius: 8, padding: "1rem" }}>
         <p style={{ fontSize: 13, fontWeight: 500, marginBottom: 10 }}>Últimas ligações</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {(chamadasRecentes as any[]).map((c) => (
-            
-              key={c.id}
-              href={`/chamadas/${c.id}`}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                textDecoration: "none",
-                color: "#333",
-                padding: "8px 0",
-                borderBottom: "1px solid #f0efe9",
-                fontSize: 13,
-              }}
-            >
-              <span>{c.lead_nome ?? "Lead sem nome"} <span style={{ color: "#999" }}>· {c.campanha_nome ?? "sem campanha"}</span></span>
-              <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                {c.duracao_segundos != null && (
-                  <span style={{ color: "#999", fontSize: 12 }}>{Math.floor(c.duracao_segundos / 60)}m{String(c.duracao_segundos % 60).padStart(2, "0")}s</span>
-                )}
-                <span style={{ color: COR_ATENDIMENTO[c.resultado_atendimento] ?? "#999", fontWeight: 500 }}>
-                  {LABEL_ATENDIMENTO[c.resultado_atendimento] ?? "—"}
-                </span>
-              </span>
-            </a>
-          ))}
+          {(chamadasRecentes as any[]).map((c) =>
+            React.createElement(
+              "a",
+              {
+                key: c.id,
+                href: `/chamadas/${c.id}`,
+                style: {
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  color: "#333",
+                  padding: "8px 0",
+                  borderBottom: "1px solid #f0efe9",
+                  fontSize: 13,
+                },
+              },
+              React.createElement(
+                "span",
+                null,
+                c.lead_nome ?? "Lead sem nome",
+                " ",
+                React.createElement("span", { style: { color: "#999" } }, "· ", c.campanha_nome ?? "sem campanha")
+              ),
+              React.createElement(
+                "span",
+                { style: { display: "flex", alignItems: "center", gap: 10 } },
+                c.duracao_segundos != null &&
+                  React.createElement(
+                    "span",
+                    { style: { color: "#999", fontSize: 12 } },
+                    `${Math.floor(c.duracao_segundos / 60)}m${String(c.duracao_segundos % 60).padStart(2, "0")}s`
+                  ),
+                React.createElement(
+                  "span",
+                  { style: { color: COR_ATENDIMENTO[c.resultado_atendimento] ?? "#999", fontWeight: 500 } },
+                  LABEL_ATENDIMENTO[c.resultado_atendimento] ?? "—"
+                )
+              )
+            )
+          )}
           {chamadasRecentes.length === 0 && <p style={{ color: "#999", fontSize: 13 }}>Nenhuma ligação finalizada ainda.</p>}
         </div>
       </div>
