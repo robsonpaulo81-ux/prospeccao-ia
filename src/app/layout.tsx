@@ -30,7 +30,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/leads" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Leads</a>
             <a href="/indicadores" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Indicadores</a>
             <a href="/transacoes" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Financeiro</a>
-            <a href="/mensagens" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Painel Mensagens IA</a>
             <a href="https://robsonpaulo81-ux.github.io/habitacao-para-todos/" target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Planta & Chave</a>
             <ThemeToggle />
           </nav>
