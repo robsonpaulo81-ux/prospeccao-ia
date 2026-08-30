@@ -1,44 +1,91 @@
-import { query } from "@/lib/db";
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export async function POST(req: Request) {
-  const { nome, mensagem, filtros } = await req.json();
-  // filtros: { fase?: string, cidade?: string, tipo_imovel?: string }
+export default function NovaCampanhaSMS() {
+  const router = useRouter();
+  const [nome, setNome] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const [fase, setFase] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [totalDestinatarios, setTotalDestinatarios] = useState<number | null>(null);
 
-  const campanha = await query(
-    "INSERT INTO campanhas_sms (nome, mensagem) VALUES ($1, $2) RETURNING id",
-    [nome, mensagem]
+  const criarCampanha = async () => {
+    setEnviando(true);
+    const res = await fetch("/api/campanhas-sms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome,
+        mensagem,
+        filtros: { fase: fase || undefined, cidade: cidade || undefined },
+      }),
+    });
+    const data = await res.json();
+    setTotalDestinatarios(data.total);
+    setEnviando(false);
+    return data.campanhaId;
+  };
+
+  const enviarAgora = async () => {
+    const campanhaId = await criarCampanha();
+    await fetch(`/api/campanhas-sms/${campanhaId}/enviar`, { method: "POST" });
+    router.push("/campanhas-sms");
+  };
+
+  const caracteres = mensagem.length;
+  const partesSMS = Math.ceil(caracteres / 160) || 1;
+
+  return (
+    <div className="max-w-xl mx-auto p-6 space-y-4">
+      <h1 className="text-xl font-semibold">Nova Campanha SMS</h1>
+
+      <div>
+        <label className="text-sm font-medium">Nome da campanha</label>
+        <input
+          className="w-full border rounded p-2"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+          placeholder="Ex: Reativação leads frios agosto"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-medium">Mensagem</label>
+        <textarea
+          className="w-full border rounded p-2"
+          rows={4}
+          value={mensagem}
+          onChange={(e) => setMensagem(e.target.value)}
+        />
+        <p className="text-xs text-gray-500">
+          {caracteres} caracteres · {partesSMS} parte(s) de SMS
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium">Fase (opcional)</label>
+          <input className="w-full border rounded p-2" value={fase} onChange={(e) => setFase(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-sm font-medium">Cidade (opcional)</label>
+          <input className="w-full border rounded p-2" value={cidade} onChange={(e) => setCidade(e.target.value)} />
+        </div>
+      </div>
+
+      <button
+        onClick={enviarAgora}
+        disabled={enviando || !nome || !mensagem}
+        className="w-full bg-red-600 text-white rounded p-2 font-medium disabled:opacity-50"
+      >
+        {enviando ? "Enviando..." : "Enviar campanha"}
+      </button>
+
+      {totalDestinatarios !== null && (
+        <p className="text-sm text-gray-600">Enviado para {totalDestinatarios} leads.</p>
+      )}
+    </div>
   );
-  const campanhaId = campanha.rows[0].id;
-
-  const condicoes: string[] = [];
-  const valores: any[] = [];
-  let i = 1;
-
-  if (filtros.fase) {
-    condicoes.push(`fase = $${i++}`);
-    valores.push(filtros.fase);
-  }
-  if (filtros.cidade) {
-    condicoes.push(`cidade = $${i++}`);
-    valores.push(filtros.cidade);
-  }
-  if (filtros.tipo_imovel) {
-    condicoes.push(`tipo_imovel = $${i++}`);
-    valores.push(filtros.tipo_imovel);
-  }
-
-  const whereClause = condicoes.length ? `WHERE ${condicoes.join(" AND ")}` : "";
-  const leads = await query(
-    `SELECT id, telefone FROM leads ${whereClause} AND telefone IS NOT NULL`,
-    valores
-  );
-
-  for (const lead of leads.rows) {
-    await query(
-      "INSERT INTO campanha_sms_destinatarios (campanha_id, lead_id, telefone) VALUES ($1, $2, $3)",
-      [campanhaId, lead.id, lead.telefone]
-    );
-  }
-
-  return Response.json({ ok: true, campanhaId, total: leads.rows.length });
 }
