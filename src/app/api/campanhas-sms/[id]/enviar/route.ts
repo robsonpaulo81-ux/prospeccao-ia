@@ -1,30 +1,44 @@
 import { query } from "@/lib/db";
-import { enviarSMS } from "@/lib/twilio-sms";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request) {
+  const { nome, mensagem, filtros } = await req.json();
+  // filtros: { fase?: string, cidade?: string, tipo_imovel?: string }
+
   const campanha = await query(
-    "SELECT * FROM campanhas_sms WHERE id = $1", [params.id]
+    "INSERT INTO campanhas_sms (nome, mensagem) VALUES ($1, $2) RETURNING id",
+    [nome, mensagem]
   );
-  const destinatarios = await query(
-    "SELECT * FROM campanha_sms_destinatarios WHERE campanha_id = $1 AND status = 'pendente'",
-    [params.id]
-  );
+  const campanhaId = campanha.rows[0].id;
 
-  for (const d of destinatarios.rows) {
-    try {
-      await enviarSMS(d.telefone, campanha.rows[0].mensagem);
-      await query(
-        "UPDATE campanha_sms_destinatarios SET status='enviado', enviado_em=now() WHERE id=$1",
-        [d.id]
-      );
-    } catch (e: any) {
-      await query(
-        "UPDATE campanha_sms_destinatarios SET status='falhou', erro=$1 WHERE id=$2",
-        [e.message, d.id]
-      );
-    }
+  const condicoes: string[] = [];
+  const valores: any[] = [];
+  let i = 1;
+
+  if (filtros.fase) {
+    condicoes.push(`fase = $${i++}`);
+    valores.push(filtros.fase);
+  }
+  if (filtros.cidade) {
+    condicoes.push(`cidade = $${i++}`);
+    valores.push(filtros.cidade);
+  }
+  if (filtros.tipo_imovel) {
+    condicoes.push(`tipo_imovel = $${i++}`);
+    valores.push(filtros.tipo_imovel);
   }
 
-  await query("UPDATE campanhas_sms SET status='concluida' WHERE id=$1", [params.id]);
-  return Response.json({ ok: true, total: destinatarios.rows.length });
+  const whereClause = condicoes.length ? `WHERE ${condicoes.join(" AND ")}` : "";
+  const leads = await query(
+    `SELECT id, telefone FROM leads ${whereClause} AND telefone IS NOT NULL`,
+    valores
+  );
+
+  for (const lead of leads.rows) {
+    await query(
+      "INSERT INTO campanha_sms_destinatarios (campanha_id, lead_id, telefone) VALUES ($1, $2, $3)",
+      [campanhaId, lead.id, lead.telefone]
+    );
+  }
+
+  return Response.json({ ok: true, campanhaId, total: leads.rows.length });
 }
