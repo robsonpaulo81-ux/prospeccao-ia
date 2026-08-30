@@ -1,12 +1,10 @@
 import "./globals.css";
 import ThemeToggle from "./components/ThemeToggle";
-
 export const metadata = {
   metadataBase: new URL("https://prospeccao-ia-nu.vercel.app"),
   title: "Prospecção IA",
   description: "Dashboard de prospecção com agentes de IA de voz e texto",
 };
-
 const scriptInicialTema = `
 (function() {
   try {
@@ -17,7 +15,6 @@ const scriptInicialTema = `
   } catch (e) {}
 })();
 `;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" data-theme="light">
@@ -27,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", minHeight: "100vh" }}>
           <nav style={{ background: "var(--bg-nav)", borderRight: "1px solid var(--border)", padding: "1rem" }}>
-            <p style={{ fontWeight: 600, marginBottom: "1.5rem" }}>Prospecção IA</p>
+            <p style={{ fontWeight: 700, fontSize: "1.3rem", letterSpacing: "0.02em", marginBottom: "1.5rem", lineHeight: 1.2 }}>CRM RP IMOBI</p>
             <a href="/" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Visão geral</a>
             <a href="/campanhas" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Campanhas</a>
             <a href="/leads" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Leads</a>
