@@ -45,12 +45,15 @@ export default async function CampanhasPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <h1 style={{ fontSize: 18, fontWeight: 500 }}>Campanhas</h1>
-        <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ display: "flex", gap: 8 }}>
           <a href="https://dashboard.retellai.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, padding: "6px 12px", border: "1px solid #333", borderRadius: 6, textDecoration: "none", color: "#fff", background: "#333" }}>
             📞 Painel de Ligação IA
           </a>
           <a href="/mensagens" style={{ fontSize: 13, padding: "6px 12px", border: "1px solid #333", borderRadius: 6, textDecoration: "none", color: "#fff", background: "#333" }}>
             💬 Painel Mensagens IA
+          </a>
+          <a href="/campanhas-sms/nova" style={{ fontSize: 13, padding: "6px 12px", border: "1px solid #333", borderRadius: 6, textDecoration: "none", color: "#fff", background: "#333" }}>
+            📩 Campanhas SMS
           </a>
         </div>
       </div>
