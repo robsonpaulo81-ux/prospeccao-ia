@@ -10,13 +10,13 @@ export async function POST(req: Request) {
   );
 
   let adicionados = 0;
-  for (const lead of leads.rows) {
+  for (const lead of leads) {
     if (!lead.telefone) continue;
     const existe = await query(
       `SELECT id FROM fila_discagem WHERE lead_id = $1 AND status IN ('pendente','discando')`,
       [lead.id]
     );
-    if (existe.rows.length > 0) continue;
+    if (existe.length > 0) continue;
 
     await query(
       `INSERT INTO fila_discagem (lead_id, telefone) VALUES ($1, $2)`,
