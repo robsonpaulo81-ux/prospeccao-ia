@@ -28,7 +28,7 @@ export async function POST() {
 
   const resultados = [];
 
-  for (const item of fila.rows) {
+  for (const item of fila) {
     try {
       const resp = await fetch("https://api.retellai.com/v2/create-phone-call", {
         method: "POST",
