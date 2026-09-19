@@ -92,3 +92,26 @@ GROUP BY DATE(iniciado_em), campanha_id;
 
 -- Para atualizar a view depois de novas chamadas, rode periodicamente (cron/job):
 -- REFRESH MATERIALIZED VIEW funil_diario;
+
+-- Campanhas de SMS (usadas por /campanhas-sms e /api/campanhas-sms)
+-- Nota: essas tabelas já existem em produção; aqui ficam documentadas
+-- para quem está subindo o projeto do zero.
+CREATE TABLE IF NOT EXISTS campanhas_sms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome VARCHAR(255) NOT NULL,
+  mensagem TEXT NOT NULL,
+  status VARCHAR(30) DEFAULT 'criada',
+  criado_em TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS campanha_sms_destinatarios (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campanha_id UUID REFERENCES campanhas_sms(id) ON DELETE CASCADE,
+  lead_id UUID REFERENCES leads(id),
+  telefone VARCHAR(30) NOT NULL,
+  status VARCHAR(30) DEFAULT 'pendente',
+  erro TEXT,
+  enviado_em TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_sms_dest_campanha ON campanha_sms_destinatarios(campanha_id);
