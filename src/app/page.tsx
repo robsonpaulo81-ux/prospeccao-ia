@@ -34,6 +34,21 @@ function formatarMoeda(valor: number) {
   });
 }
 
+const FASE_COR_PONTO: Record<string, string> = {
+  novo: "#b4b2a9",
+  atendimento: "#3b82c4",
+  interessado: "#0f9d78",
+  hot_lead: "#e8973a",
+  analise_cca: "#4527a0",
+  pend_documentacao: "#303f9f",
+  aprovado: "#1b5e20",
+  condicionado: "#7a4a00",
+  reprovado: "#212121",
+  restricao: "#c0392b",
+  interesse_futuro: "#8a5a00",
+  sem_interesse: "#999",
+};
+
 export default async function VisaoGeralPage() {
   const [totalLeads] = await query(`SELECT COUNT(*)::int AS total FROM leads`);
   const [totalIndicadores] = await query(
@@ -41,6 +56,12 @@ export default async function VisaoGeralPage() {
   );
   const [hotLeads] = await query(`SELECT COUNT(*)::int AS total FROM leads WHERE fase = 'hot_lead'`);
   const [indicacoesLeads] = await query(`SELECT COUNT(*)::int AS total FROM leads WHERE origem = 'indicacao'`);
+  const [novosSeteDias] = await query(`
+    SELECT COUNT(*)::int AS total
+    FROM leads
+    WHERE criado_em >= now() - interval '7 days'
+  `);
+  const [aprovados] = await query(`SELECT COUNT(*)::int AS total FROM leads WHERE fase = 'aprovado'`);
 
   const porFase = await query(`
     SELECT fase, COUNT(*)::int AS total FROM leads GROUP BY fase
@@ -58,6 +79,23 @@ export default async function VisaoGeralPage() {
     GROUP BY i.id
     ORDER BY total DESC
     LIMIT 5
+  `);
+
+  const ultimosLeads = await query(`
+    SELECT id, nome, telefone, fase, origem, criado_em
+    FROM leads
+    ORDER BY criado_em DESC
+    LIMIT 8
+  `);
+
+  const [chamadasResumo] = await query(`
+    SELECT
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE resultado_atendimento = 'atendida')::int AS atendidas,
+      COUNT(*) FILTER (WHERE resultado_atendimento = 'nao_atendida')::int AS nao_atendidas,
+      COUNT(*) FILTER (WHERE resultado_atendimento = 'recusada')::int AS recusadas
+    FROM chamadas
+    WHERE iniciado_em >= now() - interval '30 days'
   `);
 
   let financeiroPorFase: any[] = [];
@@ -90,9 +128,10 @@ export default async function VisaoGeralPage() {
 
   const cards = [
     { titulo: "Total de leads", valor: totalLeads.total, cor: "#3b82c4", bg: "#e6f1fb" },
+    { titulo: "Novos (7 dias)", valor: novosSeteDias.total, cor: "#0f9d78", bg: "#e1f5ee" },
     { titulo: "Hot leads 🔥", valor: hotLeads.total, cor: "#e8973a", bg: "#faeeda" },
-    { titulo: "Indicadores ativos", valor: totalIndicadores.total, cor: "#0f9d78", bg: "#e1f5ee" },
-    { titulo: "Leads por indicação", valor: indicacoesLeads.total, cor: "#8b5cf6", bg: "#f0ebfd" },
+    { titulo: "Aprovados ✅", valor: aprovados.total, cor: "#1b5e20", bg: "#dff5e1" },
+    { titulo: "Indicadores ativos", valor: totalIndicadores.total, cor: "#8b5cf6", bg: "#f0ebfd" },
   ];
 
   return (
@@ -124,6 +163,63 @@ export default async function VisaoGeralPage() {
                     {["🥇", "🥈", "🥉"][i] ?? "•"} {ind.nome}
                   </span>
                   <strong style={{ color: "var(--text)" }}>{ind.total}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 16, marginTop: 16 }}>
+        <div style={{ background: "var(--card-bg)", borderRadius: 12, padding: "1.25rem", border: "1px solid var(--border)" }}>
+          <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, color: "var(--accent-2)" }}>Chamadas · últimos 30 dias</p>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>Desempenho do discador e da IA de voz</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+            <div style={{ background: "var(--bg)", borderRadius: 8, padding: "10px 12px" }}>
+              <p style={{ fontSize: 11, color: "var(--text-muted)" }}>Total</p>
+              <strong style={{ fontSize: 22, color: "var(--text)" }}>{chamadasResumo?.total ?? 0}</strong>
+            </div>
+            <div style={{ background: "#e1f5ee", borderRadius: 8, padding: "10px 12px" }}>
+              <p style={{ fontSize: 11, color: "#085041" }}>Atendidas</p>
+              <strong style={{ fontSize: 22, color: "#085041" }}>{chamadasResumo?.atendidas ?? 0}</strong>
+            </div>
+            <div style={{ background: "#faeeda", borderRadius: 8, padding: "10px 12px" }}>
+              <p style={{ fontSize: 11, color: "#633806" }}>Não atendidas</p>
+              <strong style={{ fontSize: 22, color: "#633806" }}>{chamadasResumo?.nao_atendidas ?? 0}</strong>
+            </div>
+            <div style={{ background: "#fcebeb", borderRadius: 8, padding: "10px 12px" }}>
+              <p style={{ fontSize: 11, color: "#791f1f" }}>Recusadas</p>
+              <strong style={{ fontSize: 22, color: "#791f1f" }}>{chamadasResumo?.recusadas ?? 0}</strong>
+            </div>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 14 }}>
+            Taxa de atendimento: <strong style={{ color: "var(--text)" }}>
+              {Number(chamadasResumo?.total) > 0 ? `${Math.round((Number(chamadasResumo.atendidas) / Number(chamadasResumo.total)) * 100)}%` : "—"}
+            </strong>
+          </p>
+        </div>
+
+        <div style={{ background: "var(--card-bg)", borderRadius: 12, padding: "1.25rem", border: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--accent-2)" }}>Leads recentes</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>Últimos contatos que entraram no CRM</p>
+            </div>
+            <a href="/leads" style={{ fontSize: 12, color: "var(--accent-2)" }}>Ver todos →</a>
+          </div>
+          {ultimosLeads.length === 0 ? (
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Nenhum lead cadastrado ainda.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {ultimosLeads.map((lead: any) => (
+                <div key={lead.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "9px 0", borderTop: "1px solid var(--border)" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.nome || "Lead sem nome"}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{lead.telefone || "Sem telefone"} · {lead.origem || "sem origem"}</p>
+                  </div>
+                  <span style={{ fontSize: 10, color: FASE_COR_PONTO[lead.fase] || "var(--text-muted)", background: `${FASE_COR_PONTO[lead.fase] || "#999"}22`, padding: "3px 7px", borderRadius: 8, whiteSpace: "nowrap" }}>
+                    {CORES_FASE[lead.fase]?.titulo || lead.fase || "—"}
+                  </span>
                 </div>
               ))}
             </div>
