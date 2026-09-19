@@ -1,1 +1,6 @@
-{ "crons": [{ "path": "/api/discador/processar", "schedule": "*/5 * * * *" }] }
+{
+  "crons": [
+    { "path": "/api/discador/processar", "schedule": "*/5 * * * *" },
+    { "path": "/api/analises/processar", "schedule": "*/5 * * * *" }
+  ]
+}

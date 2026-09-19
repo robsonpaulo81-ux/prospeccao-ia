@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { COLUNAS, FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "@/lib/labels";
 import { BotaoProcessarFila } from "@/components/BotaoProcessarFila";
+import { BotaoProcessarAnalises } from "@/components/BotaoProcessarAnalises";
 
 type Lead = {
   id: string;
@@ -281,8 +282,9 @@ export default function KanbanBoard({ leadsIniciais }: { leadsIniciais: Lead[] }
 
   return (
     <div>
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 12, display: "flex", gap: 12, flexWrap: "wrap" }}>
         <BotaoProcessarFila />
+        <BotaoProcessarAnalises />
       </div>
       {erro && <p style={{ fontSize: 13, color: "#791f1f", marginBottom: 12 }}>{erro}</p>}
       <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { analisarChamada } from "@/lib/retell";
 import { gerarSugestoesCoach, type TurnoTranscricao } from "@/lib/coach-engine";
 
 // Configure esta URL no Retell em Settings -> Webhooks:
@@ -52,22 +51,6 @@ function classificarAtendimento(call: any): "atendida" | "nao_atendida" | "recus
   if (motivo && recusadas.includes(motivo)) return "recusada";
   if (motivo && naoAtendidas.includes(motivo)) return "nao_atendida";
   return "atendida";
-}
-
-// Decide a fase do Kanban a partir da análise da IA.
-// Restrição e "sem interesse" têm prioridade sobre interesse/hot lead.
-function definirFase(analise: {
-  tem_restricao: boolean;
-  motivo_sem_interesse: string | null;
-  hot_lead: boolean;
-  tipo_imovel: string | null;
-  cidade_interesse: string | null;
-}): string {
-  if (analise.tem_restricao) return "restricao";
-  if (analise.motivo_sem_interesse) return "sem_interesse";
-  if (analise.hot_lead) return "hot_lead";
-  if (analise.tipo_imovel || analise.cidade_interesse) return "interessado";
-  return "atendimento";
 }
 
 export async function POST(req: NextRequest) {
@@ -168,44 +151,13 @@ export async function POST(req: NextRequest) {
       );
 
       if (chamada) {
-        const analise = await analisarChamada(transcricao);
-
+        // A análise em si (chamada à Anthropic, 5-20s) roda fora do webhook,
+        // em /api/analises/processar via cron — ver comentário lá. Aqui só
+        // garantimos que a transcrição está salva: o job pega daí.
         await query(
-          `INSERT INTO analises_chamada (chamada_id, sentimento, score_interesse, objecoes, palavras_chave, resumo)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (chamada_id) DO UPDATE SET
-             sentimento = $2, score_interesse = $3, objecoes = $4, palavras_chave = $5, resumo = $6`,
-          [chamada.id, analise.sentimento, analise.score_interesse, analise.objecoes, analise.palavras_chave, analise.resumo]
+          `UPDATE chamadas SET transcricao = $2 WHERE retell_call_id = $1`,
+          [retellCallId, transcricao]
         );
-
-        // Atualiza o card do lead no Kanban com o que a IA identificou na ligação
-        if (chamada.lead_id) {
-          const novaFase = definirFase(analise);
-          await query(
-            `UPDATE leads
-             SET fase = $2,
-                 tipo_imovel = COALESCE($3, tipo_imovel),
-                 cidade_interesse = COALESCE($4, cidade_interesse),
-                 tem_restricao = $5,
-                 motivo_sem_interesse = $6,
-                 fase_atualizada_em = now()
-             WHERE id = $1`,
-            [
-              chamada.lead_id,
-              novaFase,
-              analise.tipo_imovel,
-              analise.cidade_interesse,
-              analise.tem_restricao,
-              analise.motivo_sem_interesse,
-            ]
-          );
-
-          await query(
-            `INSERT INTO lead_eventos (lead_id, tipo, descricao)
-             VALUES ($1, 'ligacao', $2)`,
-            [chamada.lead_id, analise.resumo || "Ligação via IA (Retell) sem resumo gerado."]
-          );
-        }
       }
     }
   }
