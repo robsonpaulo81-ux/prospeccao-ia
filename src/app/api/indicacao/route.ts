@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { notificarLeadNovo } from "@/lib/notificacoes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,6 +57,15 @@ export async function POST(req: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9) RETURNING *`,
       [leadNome, leadTelefone, tipoImovelValido, "novo", indicador.id, "indicacao", false, documentosArray.length > 0 ? JSON.stringify(documentosArray) : null, notas ?? null]
     );
+
+    // Avisa o dono do CRM no WhatsApp (fire-and-forget, não bloqueia a resposta)
+    notificarLeadNovo({
+      nome: leadInserido.nome,
+      telefone: leadInserido.telefone,
+      origem: "indicacao",
+      tipo_imovel: leadInserido.tipo_imovel,
+      cidade_interesse: leadInserido.cidade_interesse,
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true, lead: leadInserido, indicador }, { status: 201 });
   } catch (err: any) {

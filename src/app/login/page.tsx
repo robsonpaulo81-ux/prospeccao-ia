@@ -1,7 +1,7 @@
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { erro?: string };
+  searchParams: { erro?: string; bloqueado?: string };
 }) {
   return (
     <div
@@ -50,8 +50,13 @@ export default function LoginPage({
           }}
         />
 
-        {searchParams?.erro && (
+        {searchParams?.erro && !searchParams?.bloqueado && (
           <p style={{ fontSize: 13, color: "#c0392b", marginBottom: 12 }}>Senha incorreta.</p>
+        )}
+        {searchParams?.bloqueado && (
+          <p style={{ fontSize: 13, color: "#c0392b", marginBottom: 12 }}>
+            Muitas tentativas. Tente de novo em {searchParams.bloqueado} minuto(s).
+          </p>
         )}
 
         <button

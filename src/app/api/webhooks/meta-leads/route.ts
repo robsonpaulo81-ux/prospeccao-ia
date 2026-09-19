@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { notificarLeadNovo } from '@/lib/notificacoes';
 
 const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || '';
 const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || '';
@@ -45,6 +46,9 @@ export async function POST(req: NextRequest) {
                VALUES ($1, $2, 'meta_ads', 'novo', NOW())`,
               [nome, telefone]
             );
+
+            // Avisa o dono do CRM no WhatsApp (fire-and-forget)
+            notificarLeadNovo({ nome, telefone, origem: "meta_ads" }).catch(() => {});
           }
         }
       }
