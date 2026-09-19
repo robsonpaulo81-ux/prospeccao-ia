@@ -35,6 +35,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/atendimento-ao-vivo" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Live Coach</a>
             <a href="https://robsonpaulo81-ux.github.io/habitacao-para-todos/" target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "8px 0", textDecoration: "none" }}>Planta & Chave</a>
             <ThemeToggle />
+            <form action="/api/logout" method="POST" style={{ marginTop: "1rem" }}>
+              <button
+                type="submit"
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  padding: "6px 12px",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  color: "var(--text-muted, #888)",
+                  width: "100%",
+                }}
+              >
+                Sair
+              </button>
+            </form>
           </nav>
           <main style={{ padding: "1.5rem" }}>{children}</main>
         </div>
