@@ -13,6 +13,7 @@ export default async function LeadsPage() {
            (CURRENT_DATE - (criado_em AT TIME ZONE 'America/Sao_Paulo')::date) AS dias_desde_indicacao
     FROM leads
     ORDER BY fase_atualizada_em DESC
+    LIMIT 1000
   `);
 
   return (

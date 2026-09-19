@@ -1,12 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import KanbanBoard from "./KanbanBoard";
 import ListaLeads from "./ListaLeads";
+
 export default function LeadsView({ leadsIniciais }: { leadsIniciais: any[] }) {
   const [modo, setModo] = useState<"kanban" | "lista">("kanban");
+  const [busca, setBusca] = useState("");
+
+  // Busca simples por nome, telefone e notas — ignora acentos e maiúsculas.
+  const leadsFiltrados = useMemo(() => {
+    const termo = busca
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .trim();
+    if (!termo) return leadsIniciais;
+    const termos = termo.split(/s+/);
+    return leadsIniciais.filter((lead) => {
+      const alvo = [lead.nome, lead.telefone, lead.notas]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "");
+      return termos.every((t) => alvo.includes(t));
+    });
+  }, [leadsIniciais, busca]);
+
   return (
     <div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 12, alignItems: "center", flexWrap: "wrap" }}>
         <button
           onClick={() => setModo("kanban")}
           style={{
@@ -35,11 +58,33 @@ export default function LeadsView({ leadsIniciais }: { leadsIniciais: any[] }) {
         >
           Lista
         </button>
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por nome, telefone ou notas..."
+          style={{
+            flex: 1,
+            minWidth: 200,
+            maxWidth: 360,
+            fontSize: 13,
+            padding: "6px 10px",
+            border: "1px solid var(--border)",
+            borderRadius: 4,
+            background: "var(--card-bg)",
+            color: "var(--text)",
+          }}
+        />
+        {busca && (
+          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+            {leadsFiltrados.length} de {leadsIniciais.length}
+          </span>
+        )}
       </div>
       {modo === "kanban" ? (
-        <KanbanBoard leadsIniciais={leadsIniciais} />
+        <KanbanBoard leadsIniciais={leadsFiltrados} />
       ) : (
-        <ListaLeads leads={leadsIniciais} />
+        <ListaLeads leads={leadsFiltrados} />
       )}
     </div>
   );

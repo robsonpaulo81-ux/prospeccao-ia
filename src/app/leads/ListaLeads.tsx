@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "@/lib/labels";
 type Lead = {
   id: string;
@@ -12,6 +13,7 @@ type Lead = {
   criado_em?: string | null;
   dias_desde_indicacao?: number | null;
 };
+const POR_PAGINA = 50;
 function corDiasIndicacao(dias: number | null | undefined) {
   if (dias == null) return "#999";
   if (dias <= 7) return "#0f9d78";
@@ -19,6 +21,15 @@ function corDiasIndicacao(dias: number | null | undefined) {
   return "#c0392b";
 }
 export default function ListaLeads({ leads }: { leads: Lead[] }) {
+  const [pagina, setPagina] = useState(1);
+  const totalPaginas = Math.max(1, Math.ceil(leads.length / POR_PAGINA));
+
+  // Se a busca reduzir a lista, volta pra uma página válida.
+  useEffect(() => {
+    if (pagina > totalPaginas) setPagina(1);
+  }, [pagina, totalPaginas]);
+
+  const visiveis = leads.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, color: "var(--text)" }}>
@@ -33,7 +44,7 @@ export default function ListaLeads({ leads }: { leads: Lead[] }) {
           </tr>
         </thead>
         <tbody>
-          {leads.map((lead) => (
+          {visiveis.map((lead) => (
             <tr key={lead.id} style={{ borderBottom: "1px solid var(--border)" }}>
               <td style={{ padding: "8px 6px", fontWeight: 500 }}>{lead.nome ?? "Lead sem nome"}</td>
               <td style={{ padding: "8px 6px" }}>{lead.telefone ?? "—"}</td>
@@ -51,11 +62,32 @@ export default function ListaLeads({ leads }: { leads: Lead[] }) {
           ))}
           {leads.length === 0 && (
             <tr>
-              <td colSpan={6} style={{ padding: "12px 6px", color: "var(--text-muted)" }}>Nenhum lead ainda.</td>
+              <td colSpan={6} style={{ padding: "12px 6px", color: "var(--text-muted)" }}>Nenhum lead encontrado.</td>
             </tr>
           )}
         </tbody>
       </table>
+      {totalPaginas > 1 && (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "center", marginTop: 12, fontSize: 12 }}>
+          <button
+            onClick={() => setPagina((p) => Math.max(1, p - 1))}
+            disabled={pagina === 1}
+            style={{ fontSize: 12, padding: "4px 10px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--card-bg)", color: "var(--text)", cursor: pagina === 1 ? "default" : "pointer", opacity: pagina === 1 ? 0.5 : 1 }}
+          >
+            ← Anterior
+          </button>
+          <span style={{ color: "var(--text-muted)" }}>
+            Página {pagina} de {totalPaginas} ({leads.length} leads)
+          </span>
+          <button
+            onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+            disabled={pagina === totalPaginas}
+            style={{ fontSize: 12, padding: "4px 10px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--card-bg)", color: "var(--text)", cursor: pagina === totalPaginas ? "default" : "pointer", opacity: pagina === totalPaginas ? 0.5 : 1 }}
+          >
+            Próxima →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
