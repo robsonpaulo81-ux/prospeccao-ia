@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { notificarLeadNovo } from '@/lib/notificacoes';
+import { normalizarTelefone } from '@/lib/telefone';
 
 const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || '';
 const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN || '';
@@ -40,15 +41,41 @@ export async function POST(req: NextRequest) {
 
             const nome = getField('full_name') || getField('nome') || 'Lead Meta Ads';
             const telefone = getField('phone_number') || getField('telefone') || '';
+            const telefoneNormalizado = normalizarTelefone(telefone);
 
-            await query(
-              `INSERT INTO leads (nome, telefone, origem, fase, criado_em)
-               VALUES ($1, $2, 'meta_ads', 'novo', NOW())`,
-              [nome, telefone]
-            );
+            // Idempotência: a Meta reentrega webhooks quando duvida do 200.
+            // Se o telefone já existe, NÃO insere de novo nem re-notifica —
+            // responde 200 normal para a Meta parar de reenviar.
+            if (telefoneNormalizado) {
+              const [existente] = await query(
+                `SELECT id FROM leads WHERE telefone_normalizado = $1 LIMIT 1`,
+                [telefoneNormalizado]
+              );
+              if (existente) {
+                continue;
+              }
 
-            // Avisa o dono do CRM no WhatsApp (fire-and-forget)
-            notificarLeadNovo({ nome, telefone, origem: "meta_ads" }).catch(() => {});
+              try {
+                await query(
+                  `INSERT INTO leads (nome, telefone, telefone_normalizado, origem, fase, criado_em)
+                   VALUES ($1, $2, $3, 'meta_ads', 'novo', NOW())`,
+                  [nome, telefone, telefoneNormalizado]
+                );
+
+                // Avisa o dono do CRM no WhatsApp (fire-and-forget)
+                notificarLeadNovo({ nome, telefone, origem: "meta_ads" }).catch(() => {});
+              } catch (insertErr: any) {
+                if (insertErr?.code !== '23505') throw insertErr;
+                // Perdeu a corrida para outra entrega simultânea — ignora.
+              }
+            } else {
+              // Sem telefone utilizável, cadastra mesmo assim (comportamento antigo)
+              await query(
+                `INSERT INTO leads (nome, telefone, origem, fase, criado_em)
+                 VALUES ($1, $2, 'meta_ads', 'novo', NOW())`,
+                [nome, telefone]
+              );
+            }
           }
         }
       }

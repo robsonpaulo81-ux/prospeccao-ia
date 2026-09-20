@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { notificarLeadNovo } from "@/lib/notificacoes";
+import { normalizarTelefone } from "@/lib/telefone";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +12,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Nome do indicador, nome e telefone do indicado são obrigatórios." },
         { status: 400 }
+      );
+    }
+
+    const leadTelefoneNormalizado = normalizarTelefone(leadTelefone);
+    if (!leadTelefoneNormalizado) {
+      return NextResponse.json(
+        { error: "Telefone do indicado inválido. Use DDD + número." },
+        { status: 400 }
+      );
+    }
+
+    // Duplicata: se o telefone do indicado já existe, responde com o lead
+    // existente em vez de cadastrar de novo (a indicação cai no mesmo lead).
+    const [leadExistente] = await query(
+      `SELECT id, nome, fase FROM leads WHERE telefone_normalizado = $1 LIMIT 1`,
+      [leadTelefoneNormalizado]
+    );
+    if (leadExistente) {
+      return NextResponse.json(
+        {
+          ok: true,
+          duplicado: true,
+          lead: leadExistente,
+          mensagem: "Este telefone já estava cadastrado — indicação vinculada ao lead existente.",
+        },
+        { status: 200 }
       );
     }
 
@@ -52,22 +79,32 @@ export async function POST(req: NextRequest) {
     const tipoImovelValido = interesse === "casa" || interesse === "apartamento" ? interesse : null;
     const documentosArray: string[] = Array.isArray(documentoUrls) ? documentoUrls : [];
 
-    const [leadInserido] = await query(
-      `INSERT INTO leads (nome, telefone, tipo_imovel, fase, indicado_por, origem, tem_restricao, fase_atualizada_em, documento_url, notas)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9) RETURNING *`,
-      [leadNome, leadTelefone, tipoImovelValido, "novo", indicador.id, "indicacao", false, documentosArray.length > 0 ? JSON.stringify(documentosArray) : null, notas ?? null]
-    );
+    try {
+      const [leadInserido] = await query(
+        `INSERT INTO leads (nome, telefone, telefone_normalizado, tipo_imovel, fase, indicado_por, origem, tem_restricao, fase_atualizada_em, documento_url, notas)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10) RETURNING *`,
+        [leadNome, leadTelefone, leadTelefoneNormalizado, tipoImovelValido, "novo", indicador.id, "indicacao", false, documentosArray.length > 0 ? JSON.stringify(documentosArray) : null, notas ?? null]
+      );
 
     // Avisa o dono do CRM no WhatsApp (fire-and-forget, não bloqueia a resposta)
-    notificarLeadNovo({
-      nome: leadInserido.nome,
-      telefone: leadInserido.telefone,
-      origem: "indicacao",
-      tipo_imovel: leadInserido.tipo_imovel,
-      cidade_interesse: leadInserido.cidade_interesse,
-    }).catch(() => {});
+      notificarLeadNovo({
+        nome: leadInserido.nome,
+        telefone: leadInserido.telefone,
+        origem: "indicacao",
+        tipo_imovel: leadInserido.tipo_imovel,
+        cidade_interesse: leadInserido.cidade_interesse,
+      }).catch(() => {});
 
-    return NextResponse.json({ ok: true, lead: leadInserido, indicador }, { status: 201 });
+      return NextResponse.json({ ok: true, lead: leadInserido, indicador }, { status: 201 });
+    } catch (err: any) {
+      if (err?.code === "23505") {
+        return NextResponse.json(
+          { ok: true, duplicado: true, mensagem: "Este telefone já estava cadastrado." },
+          { status: 200 }
+        );
+      }
+      throw err;
+    }
   } catch (err: any) {
     console.error("Erro ao processar indicacao:", err);
     return NextResponse.json(

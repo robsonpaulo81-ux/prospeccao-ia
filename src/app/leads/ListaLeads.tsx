@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FASE_LABEL, IMOVEL_LABEL, CIDADE_LABEL } from "@/lib/labels";
+import { WhatsAppButton } from "./WhatsAppButton";
 type Lead = {
   id: string;
   nome: string | null;
@@ -41,6 +42,7 @@ export default function ListaLeads({ leads }: { leads: Lead[] }) {
             <th style={{ padding: "8px 6px", color: "var(--accent-2)" }}>Imóvel</th>
             <th style={{ padding: "8px 6px", color: "var(--accent-2)" }}>Cidade</th>
             <th style={{ padding: "8px 6px", color: "var(--accent-2)" }}>Dias</th>
+            <th style={{ padding: "8px 6px", color: "var(--accent-2)" }}></th>
           </tr>
         </thead>
         <tbody>
@@ -58,11 +60,14 @@ export default function ListaLeads({ leads }: { leads: Lead[] }) {
                   </span>
                 ) : "—"}
               </td>
+              <td style={{ padding: "8px 6px" }}>
+                <WhatsAppButton telefone={lead.telefone} nome={lead.nome} leadId={lead.id} pequeno />
+              </td>
             </tr>
           ))}
           {leads.length === 0 && (
             <tr>
-              <td colSpan={6} style={{ padding: "12px 6px", color: "var(--text-muted)" }}>Nenhum lead encontrado.</td>
+              <td colSpan={7} style={{ padding: "12px 6px", color: "var(--text-muted)" }}>Nenhum lead encontrado.</td>
             </tr>
           )}
         </tbody>

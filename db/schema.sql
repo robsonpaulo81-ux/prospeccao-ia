@@ -115,3 +115,37 @@ CREATE TABLE IF NOT EXISTS campanha_sms_destinatarios (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sms_dest_campanha ON campanha_sms_destinatarios(campanha_id);
+
+-- ============================================================
+-- Migração: deduplicação de telefone + painel de follow-up
+-- Rodar uma vez no banco de produção. Verificar duplicatas ANTES de criar
+-- o índice único (o SELECT abaixo lista conflitos; resolva-os primeiro).
+-- ============================================================
+
+-- 1. Coluna canônica de telefone (normalizada: só dígitos, com código do país)
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS telefone_normalizado VARCHAR(20);
+
+-- 2. Backfill: mesmas regras de src/lib/telefone.ts
+--    (remove não-dígitos; 10-11 dígitos locais ganham prefixo 55)
+UPDATE leads
+SET telefone_normalizado = CASE
+  WHEN LENGTH(d) IN (10, 11) THEN '55' || d
+  WHEN LENGTH(d) IN (12, 13) THEN d
+  ELSE NULL
+END
+FROM (SELECT id, regexp_replace(telefone, '\D', '', 'g') AS d FROM leads WHERE telefone IS NOT NULL) sub
+WHERE leads.id = sub.id;
+
+-- 3. Conferir duplicatas antes do índice único:
+-- SELECT telefone_normalizado, COUNT(*) FROM leads
+-- WHERE telefone_normalizado IS NOT NULL
+-- GROUP BY 1 HAVING COUNT(*) > 1;
+
+-- 4. Índice único — só cria se não houver duplicatas (passo 3 vazio)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leads_telefone_normalizado
+  ON leads (telefone_normalizado)
+  WHERE telefone_normalizado IS NOT NULL;
+
+-- 5. Índices do painel de follow-up
+CREATE INDEX IF NOT EXISTS idx_lead_eventos_lead_criado ON lead_eventos(lead_id, criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_leads_fase_atualizada ON leads(fase, fase_atualizada_em);

@@ -2,8 +2,15 @@
 import { useMemo, useState } from "react";
 import KanbanBoard from "./KanbanBoard";
 import ListaLeads from "./ListaLeads";
+import FollowUpPanel from "./FollowUpPanel";
 
-export default function LeadsView({ leadsIniciais }: { leadsIniciais: any[] }) {
+export default function LeadsView({
+  leadsIniciais,
+  diasFollowUp,
+}: {
+  leadsIniciais: any[];
+  diasFollowUp: number;
+}) {
   const [modo, setModo] = useState<"kanban" | "lista">("kanban");
   const [busca, setBusca] = useState("");
 
@@ -29,6 +36,7 @@ export default function LeadsView({ leadsIniciais }: { leadsIniciais: any[] }) {
 
   return (
     <div>
+      <FollowUpPanel leads={leadsFiltrados} limiteDias={diasFollowUp} />
       <div style={{ display: "flex", gap: 6, marginBottom: 12, alignItems: "center", flexWrap: "wrap" }}>
         <button
           onClick={() => setModo("kanban")}

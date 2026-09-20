@@ -34,6 +34,21 @@ export default function NovoLeadForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
+      if (resp.status === 409) {
+        const data = await resp.json().catch(() => null);
+        const existente = data?.lead_existente;
+        setErro(
+          existente
+            ? `Este telefone já está cadastrado: ${existente.nome || "lead sem nome"} (fase: ${existente.fase || "—"}).`
+            : data?.error || "Este telefone já está cadastrado."
+        );
+        return;
+      }
+      if (resp.status === 400) {
+        const data = await resp.json().catch(() => null);
+        setErro(data?.error || "Dados inválidos.");
+        return;
+      }
       if (!resp.ok) throw new Error('Falha ao salvar.');
       setForm({ nome: '', telefone: '', tipoImovel: '', cidadeInteresse: '', notas: '' });
       setAberto(false);
